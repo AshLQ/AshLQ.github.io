@@ -1,0 +1,903 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ash">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="1.内核回调SbieDrv.sys SbieDll.dll  目录结构: Apps:窗口UI相关 Com:对于一些com组件的隔离 ​    SandBoxBITS:          后台智能传输服务的隔离 ​    SandBoxCrypto:        认证服务的隔离 ​    SandBoxRpcSs:rpc       服务的隔离 ​    SandBoxWUAU:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SandboxIE源码分析">
+<meta property="og:url" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Ash blog">
+<meta property="og:description" content="1.内核回调SbieDrv.sys SbieDll.dll  目录结构: Apps:窗口UI相关 Com:对于一些com组件的隔离 ​    SandBoxBITS:          后台智能传输服务的隔离 ​    SandBoxCrypto:        认证服务的隔离 ​    SandBoxRpcSs:rpc       服务的隔离 ​    SandBoxWUAU:">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019100811727.png">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019110826671.png">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019171942165.png">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221024140608559.png">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221012171457582.png">
+<meta property="og:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221012171518546.png">
+<meta property="article:published_time" content="2022-12-27T11:55:33.393Z">
+<meta property="article:modified_time" content="2022-12-27T12:06:37.296Z">
+<meta property="article:author" content="Ash">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019100811727.png">
+  
+  
+  
+  <title>SandboxIE源码分析 - Ash blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Ash Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">SandboxIE源码分析</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2022-12-27 19:55" pubdate>
+          2022年12月27日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          99 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">SandboxIE源码分析</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h1 id="1-内核回调"><a href="#1-内核回调" class="headerlink" title="1.内核回调"></a>1.内核回调</h1><p><strong>SbieDrv.sys SbieDll.dll</strong> </p>
+<p><strong>目录结构:</strong></p>
+<p><strong>Apps:窗口UI相关</strong></p>
+<p><strong>Com:对于一些com组件的隔离</strong></p>
+<p>​    <strong>SandBoxBITS:          后台智能传输服务的隔离</strong></p>
+<p>​    <strong>SandBoxCrypto:        认证服务的隔离</strong></p>
+<p>​    <strong>SandBoxRpcSs:rpc       服务的隔离</strong></p>
+<p>​    <strong>SandBoxWUAU:         更新服务的隔离</strong></p>
+<p>​    <strong>SboxDcomLaunch:Dcom  服务的隔离</strong></p>
+<p><strong>Core:核心功能实现</strong></p>
+<p>​    <strong>SboxDrv:              注册一些回调,隔离的控制,权限控制,注入,通信..</strong></p>
+<p>​    <strong>SboxHostDll:           注入器</strong></p>
+<p>​    <strong>SboxDll:               应用层注入Dll</strong></p>
+<p><strong>Common:</strong></p>
+<p><strong>Parse:</strong></p>
+<p><strong>SboxMsg:</strong></p>
+<p><strong>维护了一个沙箱程序链表proc</strong></p>
+<p><strong>PsSetCreateProcessNotifyRoutine</strong> <strong>进程创建回调:</strong></p>
+<p><strong>判断是否应作为沙箱进程,防止沙箱逃逸.Dll的注入</strong></p>
+<p>判断沙箱主进程是否初始化完毕,未初始化完成,不做处理.</p>
+<p>传入参数:分配的进程id,创建该进程的父进程id,创建该进程的进程id</p>
+<p>CreateInfo-&gt;ParentProcessId, PsGetCurrentProcessId()都要传,因为通过RtlCreateUserProcess父进程是可以指定的.</p>
+<p>会加大溯源难度,这里一定要传一个PsGetCurrentProcessId(),需要注意的是在回调中PsGetCurrentProcessId()存储的是真实的父进程id,后续进行正确的判断,否则脱离沙箱管控,会带来沙箱逃逸问题..</p>
+<p>获取进程完整路径</p>
+<p>判断ParentId是否由沙箱所创建,如果是,将标志位add_process_to_job(由沙箱管理的进程标识)修改为true.</p>
+<p>如果不是,则继续判断PsGetCurrentProcessId()获取的id是否是一个由沙箱管控的进程.</p>
+<p>如果不是,则继续判断是否为一个强制沙箱模式运行的进程.</p>
+<p>强制进程:设置中进行配置,某些进程强制在沙箱下运行.,</p>
+<p>默认配置为:iexplore.exe firefox.exe App*.exe App?.exe outlook.exe cl?cke?.exe</p>
+<p>如果是一个force_process,则通过函数<em>Process_GetForcedStartBox**在沙盒下运行,add_process_to_job修改为true.</em></p>
+<p>代码的注入</p>
+<p>当检查通过后,确定是一个应被沙盒化的进程</p>
+<p>调用Process_Low_Inject进行dll的注入.,它这里的注入是通知ring3应用程序进行了跨进程的一个远程线程注入.由于session0隔离限制,</p>
+<p>某些进程是无法这样注入的,虽然可以绕过.</p>
+<p>这部分逻辑其实可以在ring0实现.通过挂靠进程,然后向ZwTestAlert函数头部写入shellcode完成dll的加载</p>
+<p><strong>PsSetLoadImageNotifyRoutine</strong> <strong>模块加载回调</strong></p>
+<p><strong>沙盒空间的初始化</strong></p>
+<p>跳过系统映像,通过判断processId是否为0和ImageInfo中的SystemModeImage字段.</p>
+<p>如果加载了32位ntdll,会将32位ntdll的基址记录于proc-&gt;ntdll32_base</p>
+<p>创建沙盒空间,沙盒的初始化相关操作.文件,注册表..</p>
+<p><strong>ObRegisterCallbacks</strong> <strong>对象回调</strong></p>
+<p><strong>主要要做的工作是句柄沙箱进程与主机进程之间句柄权限的管理.</strong></p>
+<p>对于内核句柄,不做操作.</p>
+<p>对于进程句柄,线程句柄的处理:</p>
+<p>​    如果打开的进程句柄的进程id,是当前进程,忽略.</p>
+<p>​    如果打开句柄的操作不来自沙箱,但是主机进程的目标是沙盒进程</p>
+<p>​    将句柄修改为无权限. <em>PROCESS_DENIED_ACCESS_MASK**或者THREAD_DENIED_ACCESS_MASK</em></p>
+<p>​    如果沙箱不是机密的,则会放出一些进程的访问权限,csrss.exe conhost.exe taskmgr.exe sandman.exe.</p>
+<p>​    它这里实现的较为简单,如果将shellcode注入到这些进程里面,可以很简单的绕过.</p>
+<p>​    如果打开句柄的操作来自沙箱进程,目标也是沙箱进程,允许.</p>
+<p>​    如果访问的是外部主机进程,则通过用户配置判断是否将句柄修改为无权限.并记录跨沙箱访问记录.</p>
+<h1 id="2-服务"><a href="#2-服务" class="headerlink" title="2.服务"></a>2.服务</h1><h4 id="1-scm-c"><a href="#1-scm-c" class="headerlink" title="1.scm.c"></a>1.scm.c</h4><h5 id="Scm-Init-AdvApi"><a href="#Scm-Init-AdvApi" class="headerlink" title="Scm_Init_AdvApi"></a>Scm_Init_AdvApi</h5><p>hook安装</p>
+<p>执行Scm_Notify_Init 安装NotifyServiceStatusChange回调</p>
+<p>执行Scm_HookRegisterServiceCtrlHandler</p>
+<h5 id="Scm-Notify-Init"><a href="#Scm-Notify-Init" class="headerlink" title="Scm_Notify_Init"></a>Scm_Notify_Init</h5><p>NotifyServiceStatusChange此回调在vista和更高版本中可用.</p>
+<p>所以在高版本下,sbie hook了此函数.</p>
+<h5 id="Scm-HookRegisterServiceCtrlHandler"><a href="#Scm-HookRegisterServiceCtrlHandler" class="headerlink" title="Scm_HookRegisterServiceCtrlHandler"></a>Scm_HookRegisterServiceCtrlHandler</h5><p>内部声明了2个7字节的opcode,</p>
+<p>64位下7字节覆盖掉了原代码.</p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019100811727.png" srcset="/img/loading.gif" lazyload alt="image-20221019100811727"></p>
+<p>其他情况默认hook.</p>
+<h5 id="Scm-OpenSCManagerW"><a href="#Scm-OpenSCManagerW" class="headerlink" title="Scm_OpenSCManagerW"></a>Scm_OpenSCManagerW</h5><p>对当前线程token进行检查,如果没有查询到token,并且当前进程标识是受限制的,则无权限.这里这个标识为默认是可以不受限的.</p>
+<p>获取到token,检查此token是否在受限制的组中.通过函数NtQueryInformationToken 获取到的受限sid列表如果大于0则直接返回无权限.</p>
+<p>这个函数实际返回的是自定义的虚拟句柄,自定义的返回值</p>
+<p>#define HANDLE_SERVICE_MANAGER          ((SC_HANDLE)0x12340001)<br>#define HANDLE_SERVICE_STATUS         	  ((SERVICE_STATUS_HANDLE)0x12340003)<br>#define HANDLE_SERVICE_LOCK          	 	((SC_LOCK)0x12340005)<br>#define HANDLE_EVENT_LOG             		   ((SC_LOCK)0x12340007)</p>
+<h5 id="Scm-OpenServiceW"><a href="#Scm-OpenServiceW" class="headerlink" title="Scm_OpenServiceW"></a>Scm_OpenServiceW</h5><p>判断通过Scm_OpenSCManagerW获取到的handler值是否为HANDLE_SERVICE_MANAGER,如果不是,返回无权限.而后进行了一些参数判断.</p>
+<p>检查此服务是否在沙盒中</p>
+<p>直接调用函数CreateKey返回句柄.</p>
+<p>如果不在沙盒中.</p>
+<p>向sbiesvc通信查询该服务具体信息,不从本进程查询,可以确定是无法确定当前沙盒进程的权限,有些api无法直接使用,所以借助sbiesvc调用函数查询服务信息.如果查询得到信息,构造一个serviceName查询不到,返回0.对服务名做了一个拼接处理sbox+服务名,之后作为句柄直接返回.</p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019110826671.png" srcset="/img/loading.gif" lazyload alt="image-20221019110826671"></p>
+<h5 id="Scm-CloseServiceHandle"><a href="#Scm-CloseServiceHandle" class="headerlink" title="Scm_CloseServiceHandle"></a>Scm_CloseServiceHandle</h5><p>这里关闭句柄做了判断,自己构造的句柄,并针对回调相关做了其他的处理,后面说明,直接释放字符串.</p>
+<h4 id="2-scm-create-c"><a href="#2-scm-create-c" class="headerlink" title="2.scm_create.c"></a>2.scm_create.c</h4><p><strong>Scm_LockServiceDatabase</strong></p>
+<p>返回了虚拟的句柄HANDLE_SERVICE_LOCK</p>
+<h5 id="Scm-UnlockServiceDatabase"><a href="#Scm-UnlockServiceDatabase" class="headerlink" title="Scm_UnlockServiceDatabase"></a>Scm_UnlockServiceDatabase</h5><p>简单的处理,判断句柄是否为HANDLE_SERVICE_LOCK</p>
+<h5 id="Scm-CreateServiceW"><a href="#Scm-CreateServiceW" class="headerlink" title="Scm_CreateServiceW"></a>Scm_CreateServiceW</h5><p>由于对注册表进行了重定向,沙箱内修改注册表数据不会影响宿主机.</p>
+<p>通过Scm_OpenService,判断该服务是否已存在.如果存在直接返回</p>
+<p>调用windows原始api,在系统注册表中创建该服务的键.并设置各项键值</p>
+<p>之后将该服务名添加入sbiesvc沙箱服务列表中.</p>
+<h5 id="Scm-ChangeServiceConfigW"><a href="#Scm-ChangeServiceConfigW" class="headerlink" title="Scm_ChangeServiceConfigW"></a>Scm_ChangeServiceConfigW</h5><p>验证该服务是否存在,该服务是否是沙箱的服务.</p>
+<p>如果不是并且判断服务前17个字符是否为”clr_optimization_”,如果是,这是程序安装时使用的.net服务,不需要做任何处理,依然会成功.</p>
+<p>如果不是沙箱服务</p>
+<p>如果不是并且判断服务前17个字符是否为”clr_optimization_”,如果是,这是程序安装时使用的.net服务,不需要做任何处理,依然会成功.</p>
+<p>sbie的处理是一律返回无权限.这里控制沙箱内的进程无法修改外部服务配置.</p>
+<p>如果是沙箱的服务</p>
+<p>调用api获取句柄,调用原始api处理,修改配置.</p>
+<h5 id="Scm-DeleteService"><a href="#Scm-DeleteService" class="headerlink" title="Scm_DeleteService"></a>Scm_DeleteService</h5><p>如果不是沙箱的服务,返回无权限.</p>
+<p>如果是沙箱的服务</p>
+<p>获取sbiesvc句柄和要删除的服务句柄.</p>
+<p>调用删除注册表中记录</p>
+<p>在sbiesvb记录的沙盒列表中删除该记录.</p>
+<h5 id="SbieDll-StartBoxedService"><a href="#SbieDll-StartBoxedService" class="headerlink" title="SbieDll_StartBoxedService"></a>SbieDll_StartBoxedService</h5><p>服务的启动.</p>
+<p>SbieRpcSs服务可以将启动的服务添加入沙盒中.</p>
+<p>对参数进行检查,判断该服务是否可以启动.</p>
+<p>修改服务状态,初始化服务</p>
+<p>对sandboxie服务做特殊处理.</p>
+<p>bits服务 WUAU服务 Crypto服务</p>
+<p>通过clsid删除即将启动服务的appid中的LaunchPermission和AccessPermission</p>
+<p>为什么要删除这个,msdn描述这2个值会决定服务的正常启动</p>
+<p>关于LaunchPermission的描述</p>
+<p>这是一个REG_BINARY值。在收到本地或远程请求启动该类的服务器时，在模拟客户端时检查该值所描述的ACL，允许或不允许成功启动服务器。如果这个值不存在，DefaultLaunchPermission值会以同样的方式被检查，以确定该类代码是否可以被启动。</p>
+<p>关于AccessPermission的描述</p>
+<p>这是一个REG_BINARY值。它包含描述可以访问该类实例的委托人的访问控制列表（ACL）的数据。在收到连接到该类现有对象的请求时，被调用的应用程序会在模拟调用者时检查ACL。如果访问检查失败，连接将被拒绝。如果这个命名的值不存在，DefaultAccessPermission ACL将被测试以决定是否允许连接。</p>
+<p>对于不调用CoInitializeSecurity或不使用IGlobalOptions接口来指定AppID的应用程序，必须将应用程序的二进制文件的可执行文件映射到AppID中描述的应用程序的AppID。这是必需的，以便 COM 可以定位应用程序的 AppID。</p>
+<p>而后调用函数SbieDll_RunFromHome,内部使用CreateProcess启动,启动前,使用函数</p>
+<p>AdvApi_EnableDisableSRP hook了SaferComputeTokenFromLevel,确保CreateProcess的正常执行,为什么会hook这个函数呢</p>
+<p>CreateProcess中会调用SaferComputeTokenFromLevel进行一个软件限制策略的检查,SaferComputeTokenFromLevel的返回值决定了是失败还是继续执行.hook后的函数,会返回true</p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221019171942165.png" srcset="/img/loading.gif" lazyload alt="image-20221019171942165"></p>
+<p>执行后,关闭了hook.</p>
+<p>如果上述方式未执行成功,就通过sbiesvc启动,sbiesvc启动前,涉及到了对token的处理</p>
+<h5 id="Scm-StartServiceCtrlDispatherX"><a href="#Scm-StartServiceCtrlDispatherX" class="headerlink" title="Scm_StartServiceCtrlDispatherX"></a>Scm_StartServiceCtrlDispatherX</h5><p>与服务管理器连接,这里直接创建线程执行了serviceMain函数.让服务启动.</p>
+<h5 id="Scm-RegisterServiceCtrlHandlerA"><a href="#Scm-RegisterServiceCtrlHandlerA" class="headerlink" title="Scm_RegisterServiceCtrlHandlerA"></a>Scm_RegisterServiceCtrlHandlerA</h5><p>记录处理函数,和参数的指针,这里定义了全局变量.</p>
+<h5 id><a href="#" class="headerlink" title></a></h5><h4 id="3-scm-event"><a href="#3-scm-event" class="headerlink" title="3.scm_event"></a>3.scm_event</h4><p>主要是日志相关,sbie没做任何处理.</p>
+<h4 id="4-scm-misc"><a href="#4-scm-misc" class="headerlink" title="4.scm_misc"></a>4.scm_misc</h4><p>主要是hook相关</p>
+<h5 id="Scm-SecHostDll"><a href="#Scm-SecHostDll" class="headerlink" title="Scm_SecHostDll"></a>Scm_SecHostDll</h5><p>兼容性处理</p>
+<p>win8下可能获取不到sechost.dll的模块加载基址.如果获取不到,设置标志位.</p>
+<p>win7下做特殊处理,hook advapi32中的一些函数,并将sechost中的对应函数hook至advapi32</p>
+<p>这个函数在启动服务.</p>
+<h4 id="-1"><a href="#-1" class="headerlink" title></a></h4><h4 id="5-Scm-SetupMsiHooks"><a href="#5-Scm-SetupMsiHooks" class="headerlink" title="5.Scm_SetupMsiHooks"></a>5.Scm_SetupMsiHooks</h4><h5 id="Scm-SetupMsiHooks"><a href="#Scm-SetupMsiHooks" class="headerlink" title="Scm_SetupMsiHooks"></a>Scm_SetupMsiHooks</h5><p>这里对msi server进行了权限的处理,hook掉了OpenProcessToken产生的句柄,然后hook GetTokenInformation,在获取这个句柄的信息时,返回系统sid.然后在NtClose清除令牌,防止被使用.</p>
+<p>但是这段代码被取消了.</p>
+<h5 id="Scm-Notify-Init-1"><a href="#Scm-Notify-Init-1" class="headerlink" title="Scm_Notify_Init"></a>Scm_Notify_Init</h5><p>hook</p>
+<h5 id="Scm-NotifyServiceStatusChangeW"><a href="#Scm-NotifyServiceStatusChangeW" class="headerlink" title="Scm_NotifyServiceStatusChangeW"></a>Scm_NotifyServiceStatusChangeW</h5><p>内部调用Scm_Notify_ThreadProc</p>
+<p>查询服务信息,插入用户apc,执行原回调函数</p>
+<h4 id="6-scm-query"><a href="#6-scm-query" class="headerlink" title="6.scm_query"></a>6.scm_query</h4><h5 id="Scm-QueryServiceConfigW"><a href="#Scm-QueryServiceConfigW" class="headerlink" title="Scm_QueryServiceConfigW"></a>Scm_QueryServiceConfigW</h5><p>Scm_QueryServiceByHandle-&gt;Scm_GetHandleName-&gt;Scm_QueryServiceByName</p>
+<p>如果是沙箱服务,自己调api查询</p>
+<p>如果是宿主机服务,交由sbiesvc查询.</p>
+<p>如果是在64位下运行的32位进程,sbiesvc会返回一个32位的结构.这里要处理下.</p>
+<h5 id="EnumServicesStatusA"><a href="#EnumServicesStatusA" class="headerlink" title="EnumServicesStatusA"></a>EnumServicesStatusA</h5><p>枚举当前系统服务</p>
+<p>参数检查.</p>
+<p>调用sbiesvc查询系统服务列表.</p>
+<p>获取沙箱服务列表.</p>
+<p>查询服务状态信息,筛选掉一些服务,类型不匹配的,获取停止的.</p>
+<p>调用函数查询配置信息.</p>
+<h5 id="Scm-GetServiceDisplayNameW"><a href="#Scm-GetServiceDisplayNameW" class="headerlink" title="Scm_GetServiceDisplayNameW"></a>Scm_GetServiceDisplayNameW</h5><p>调函数,查信息.</p>
+<h5 id="Scm-GetServiceKeyNameW"><a href="#Scm-GetServiceKeyNameW" class="headerlink" title="Scm_GetServiceKeyNameW"></a>Scm_GetServiceKeyNameW</h5><p>调函数,获取全部服务,遍历对比lpDisplayName信息,匹配,获取keyname.</p>
+<h5 id="Scm-EnumDependentServicesA"><a href="#Scm-EnumDependentServicesA" class="headerlink" title="Scm_EnumDependentServicesA"></a>Scm_EnumDependentServicesA</h5><p>未做特殊处理,不知道会不会有兼容性问题.</p>
+<h5 id="Scm-QueryServiceObjectSecurity"><a href="#Scm-QueryServiceObjectSecurity" class="headerlink" title="Scm_QueryServiceObjectSecurity"></a>Scm_QueryServiceObjectSecurity</h5><p>此函数作用是检索与服务对象关联的安全描述符,返回的安全描述符是sbie自己构造的.</p>
+<p>sbie构造的sid和dacl.可以知道sbie对安全描述符这一块也没做hook相关处理.</p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221024140608559.png" srcset="/img/loading.gif" lazyload alt="image-20221024140608559"></p>
+<h5 id="Scm-SetServiceObjectSecurity"><a href="#Scm-SetServiceObjectSecurity" class="headerlink" title="Scm_SetServiceObjectSecurity"></a>Scm_SetServiceObjectSecurity</h5><p>未做处理.</p>
+<h1 id="3-IPC和RPC"><a href="#3-IPC和RPC" class="headerlink" title="3.IPC和RPC"></a>3.IPC和RPC</h1><h5 id="函数原型"><a href="#函数原型" class="headerlink" title="函数原型"></a>函数原型</h5><p>.函数原型: </p>
+<p>NTSTATUS </p>
+<p>NTAPI</p>
+<p>NtCreatePort(</p>
+<p>  OUT PHANDLE PortHandle,</p>
+<p>  IN  POBJECT_ATTRIBUTES ObjectAttributes,</p>
+<p>  IN  ULONG MaxConnectionInfoLength,</p>
+<p>  IN  ULONG MaxMessageLength,</p>
+<p>  IN  ULONG MaxPoolUsage</p>
+<p>);</p>
+<p>功能描述:</p>
+<p>  创建一个LPC port对象。LPC port的创建者即是LPC通信的服务端(服务端)</p>
+<p>参数:</p>
+<p> PortHandle 输出 PHANDLE是一个指针变量，如果函数被成功调用则该变量指向port对象</p>
+<p>ObjectAttributes 输入 POBJECT_ATTRIBUTES指针变量，指向一个描述对象属性的结构。OBJ_KERNEL_HANDLE，OBJ_OPENLINK,OBJ_EXCLUSIVE,OBJ_PERMANENT及OBJ_INHERIT都不是port对象的合法属性。</p>
+<p> MaxConnectionInfoLength 输入 ULONG表示通过port发送的最大数据字节数。</p>
+<p> MaxMessageLength 输入 ULONG表示通过port发送的最大消息字节数。</p>
+<p> MaxPoolUsage 输入 ULONG表示用于消息存储的非分页池的最大数量。0表示使用默认值。</p>
+<p>ZwCreatePort 将验证(MaxDataSize &lt;&#x3D; 0x104) 且(MaxMessageSize &lt;&#x3D; 0x148)。</p>
+<p> NTSTATUS </p>
+<p>NTAPI</p>
+<p>NtConnectPort(</p>
+<p>  OUT PHANDLE PortHandle,</p>
+<p>  IN PUNICODE_STRING PortName,</p>
+<p>  IN PSECURITY_QUALITY_OF_SERVICE SecurityQos,</p>
+<p>  IN OUT PPORT_VIEW ClientView OPTIONAL,</p>
+<p>  OUT PREMOTE_PORT_VIEW ServerView OPTIONAL,</p>
+<p>  OUT PULONG MaxMessageLength OPTIONAL,</p>
+<p>  IN OUT PVOID ConnectionInformation OPTIONAL,</p>
+<p>  IN OUT PULONG ConnectionInformationLength OPTIONAL</p>
+<p> );</p>
+<p>功能描述:</p>
+<p>  创建一个连接命名port的port(客户端)</p>
+<p>参数:</p>
+<p>  PortHandle 输出 PHANDLE 指针变量，指向客户端通信端口。</p>
+<p>  PortName 输入 PUNICODE_STRING指向一个结构体，该结构体描述了要连接的命名port</p>
+<p>  SecurityQos 输入 PSECURITY_QUALITY_OF_SERVICE Points to a structure that specifies the level of impersonation available to the port listener</p>
+<p>   ClientView 输入 输出 可选参数 PPORT_VIEW指针变量，指向一个结构体。该结构体描述了用于发送大量数据给listener的共享内存区，如果调用成功，该结构将被更新。</p>
+<p>​    ServerView 输出 可选参数 PREMOTE_PORT_VIEW指针变量，指向一个调用者分配的缓冲区，该缓冲区接受由listener用于发送大量数据给调用者的共享内存区上的消息。</p>
+<p>​    MaxMessageLength 输出 可选参数 PULONG表示能够通过port发送的数据的最大字节数</p>
+<p>​    ConnectionInformation 输入 输出 可选参数 PVOID指向一个调用者分配的内缓冲区，该缓冲区表示要发送给listener的连接消息并，接收到来自listener的连接消息。</p>
+<p>​    ConnectionInformationLength 输入 输出 可选参数 PULONG表示发送给listener的连接数据字节数，接收由listener发送的连接数据的字节数。</p>
+<p>NTSTATUS </p>
+<p>NTAPI</p>
+<p>NtRequestWaitReplyPort(</p>
+<p>  IN HANDLE PortHandle,</p>
+<p>  IN PPORT_MESSAGE RequestMessage,</p>
+<p>  OUT PPORT_MESSAGE ReplyMessage</p>
+<p>  );</p>
+<p>  功能描述:</p>
+<p>​    给port发送一上请求数据并等待响应(客户端)</p>
+<p>  参数:</p>
+<p>​    PortHandle 输入 HANDLE 一个port对象的句柄。该句柄不需要指定任何的访问规则</p>
+<p>​    RequestMessage 输入 PPORT_MESSAGE 指向一个调用者分配的缓冲，该缓冲描述了发送给port的请求消息</p>
+<p>​    ReplyMessage 输出 PPORT_MESSAGE 指向一个调用者分配的缓冲，该缓冲接发送给port的响应消息。</p>
+<p>NTSTATUS </p>
+<p>NTAPI</p>
+<p>NtCreateSection(</p>
+<p>  OUT PHANDLE SectionHandle,</p>
+<p>  IN ACCESS_MASK DesiredAccess,</p>
+<p>  IN POBJECT_ATTRIBUTES ObjectAttributes OPTIONAL,</p>
+<p>  IN PLARGE_INTEGER MaximumSize OPTIONAL,</p>
+<p>  IN ULONG SectionPageProtection,</p>
+<p>  IN ULONG AllocationAttributes,</p>
+<p>  IN HANDLE FileHandle OPTIONAL</p>
+<p>  );</p>
+<p>  功能描述:</p>
+<p>​    创建一个section对象</p>
+<p>  参数:</p>
+<p>​    SectionHandle 输出 PHANDLE 如果函数成功调用将会得到一个section对象的句柄。</p>
+<p>​    DesiredAccess 输入 ACCESS_MASK 表示调用者调用者需要的section对象的访内类型。该参数可以为0，也可以是以下标志的组合：</p>
+<p>​         SECTION_QUERY         - 查询访问</p>
+<p>​               SECTION_MAP_WRITE     - 当被关联时(mapped)可被写入</p>
+<p>​               SECTION_MAP_READ      - 当被关联时(mapped)可被读取</p>
+<p>​               SECTION_MAP_EXECUTE   - 当被关联时(mapped)可被执行</p>
+<p>​               SECTION_EXTEND_SIZE    - 扩展访问</p>
+<p>​               SECTION_ALL_ACCESS    - 上面全部访问类型 + STANDARD_RIGHTS_REQUIRED</p>
+<p>​    ObjectAttributes 输入 可选参数 POBJECT_ATTRIBUTES 指向一个结构体，该结构表示了对象的属性。OBJ_OPENLINK是不合法的属性对于section对象而言。</p>
+<p>​    MaximunSize 输入 可选参数 PLARGE_INTEGER 表示section的字节数。如果 FileHandle为0，这个值必需指定，否则，它将默认为由FileHandle指示的文件的大小。</p>
+<p>​    SectionPageProtection 输入 ULONG 表示页面保护的类型当section被关联时(mapped)。这个参数可以是以值中的任意一个：</p>
+<p>​         PAGE_READONLY</p>
+<p>​              PAGE_READWRITE</p>
+<p>​              PAGE_WRITECOPY</p>
+<p>​              PAGE_EXECUTE</p>
+<p>​              PAGE_EXECUTE_READ</p>
+<p>​              PAGE_EXECUTE_READWRITE</p>
+<p>​              PAGE_EXECUTE_WRITECOPY</p>
+<p>​     AllocationAttributes 输入 ULONG 表示了section的属性。该参数可以是下面这些值的组合:</p>
+<p>​              SEC_BASED     0x00200000 &#x2F;&#x2F; 在每个进程中关联(map)section到同一地址</p>
+<p>​              SEC_NO_CHANGE 0x00400000 &#x2F;&#x2F; 禁止页面保护的改变</p>
+<p>​              SEC_IMAGE      0x01000000 &#x2F;&#x2F; 关联(map)section为一个映象(image)</p>
+<p>​              SEC_VLM       0x02000000 &#x2F;&#x2F; 在VLM区内关联(map)section</p>
+<p>​              SEC_RESERVE    0x04000000 &#x2F;&#x2F; 保留不用分配页面文件存储 Reserve without allocating pagefile storage</p>
+<p>​              SEC_COMMIT    0x08000000 &#x2F;&#x2F; 提交页(Commit pages);默认的形为</p>
+<p>​              SEC_NOCACHE   0x10000000 &#x2F;&#x2F; 标记页为无缓冲区的 Mark pages as non-cacheable</p>
+<p>​     FileHandle 输入 可选参数 HANDLE 指示用于创建section对象的文件。该文件被打开的访问方式要与由保护参数指定的保护类型标志相兼容。如果FileHandle为0，则函数在文件系统中创建一个由页面文件的而不是命名文件支持的指定大小的section对象。</p>
+<h4 id="IPC隔离"><a href="#IPC隔离" class="headerlink" title="IPC隔离"></a><strong>IPC隔离</strong></h4><p><strong>Ipc_Init:</strong></p>
+<p>进行hook的安卓,调用lpc_CreateObjects函数,函数内部会通过创建一个任意对象,获取兑现管理器命名空间,此后所有的对象句柄名位于这个命名空间下,如果不存在命名空间,则发送code,让驱动通过zwcreatesymboliclinkobject创建一个.</p>
+<p><strong>Ipc_GetName</strong></p>
+<p>如果RootDirectory不为空,并且请求的RootDirectory句柄类型为一个文件目录,允许.</p>
+<p>如果既指定了objectName,又指定了路径,则返回一个特殊的状态.</p>
+<p>通过NtQueryObject查询父目录句柄名称.</p>
+<p>对创建句柄时的名称,进行了重命名处理</p>
+<h5 id="Ipc-NtCreateEvent"><a href="#Ipc-NtCreateEvent" class="headerlink" title="Ipc_NtCreateEvent"></a>Ipc_NtCreateEvent</h5><p>对于未命名的事件内核对象不作处理,sbie的理解应该是未命名的Event对象无法跨进程使用.所以不做隔离</p>
+<p>对象完整信息的获取,传参RootDirectory和ObjectName调用Ipc_GetName.</p>
+<p>创建如果没有指定对象管理器命名空间句柄,直接设置RootDirectory指定句柄.</p>
+<p>如果指定了,但是是一个目录不作处理.</p>
+<p>否则返回一个特殊的状态.</p>
+<p>调用原函数</p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221012171457582.png" srcset="/img/loading.gif" lazyload alt="image-20221012171457582"></p>
+<p> <img src="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20221012171518546.png" srcset="/img/loading.gif" lazyload alt="image-20221012171518546"></p>
+<h5 id="Ipc-CreateObjects"><a href="#Ipc-CreateObjects" class="headerlink" title="Ipc_CreateObjects:"></a><strong>Ipc_CreateObjects:</strong></h5><p>首先会通过CreateEvent获取完整对象句柄名,然后获取对象管理器命名空间,如果获取不到,</p>
+<p>向驱动通信,驱动通过函数zwcreatesymboliclinkobject创建一个对象管理器命名空间,此后该进程下创建的对象,都位于这个命名空间下.</p>
+<p><strong>NtAlpcQueryInformationMessage</strong></p>
+<p>某些情况下会返回失败,sbie做的处理只是将返回值修改.</p>
+<h5 id="Ipc-ConnectProxyPort"><a href="#Ipc-ConnectProxyPort" class="headerlink" title="Ipc_ConnectProxyPort"></a>Ipc_ConnectProxyPort</h5><p>代理的lpc端口</p>
+<p>\\RPC Control\\ntsvcs       服务管理器端口</p>
+<p>\\RPC Control\\plugplay   plug and play服务端口 这个服务是用来检测一些插入的硬件设备的</p>
+<p>ClientSharedMemory,ServerSid,ServerSharedMemory必须为null,否则结束流程.</p>
+<p>获取了请求长度,设置长度不大于1024字节.</p>
+<p>转发至了sbieSvc服务,由sbiesvc代理连接一个ipc端口,\\RPC Control \\Sbiesvc Port”;调用原始函数,记录日志.最后对数据进行了兼容性处理,调整了偏移SbieSvc是一个64位进程.</p>
+<p>没有做共享内存相关的处理.</p>
+<p><strong>NtAlpcSendWaitReceivePort hook</strong></p>
+<p><strong>NtConnectPort hook</strong></p>
+<p>连接指定端口,它主要对连接的端口,修改至了当前沙箱的对象句柄命名空间下</p>
+<p><strong>NtAlpcConnectPortEx hook</strong></p>
+<p>对安全描述符进行了处理,为了成功连接至端口,会将安全描述符修改为null.</p>
+<p><strong>IPC_GetServerEvent</strong></p>
+<p>获取一个服务的事件标识,会根据这个标识,判断是否要启动一个sbie的crypt组件的服务,在构建证书连接上下文hook函数中调用</p>
+<p><strong>Ipc_StartServer</strong></p>
+<p>某些端口是一些服务注册的,连接前要先启动服务.</p>
+<p>如果端口为actkernel,则启动sbie的DcomLaunch服务,如果是epmapper服务.则启动sbie的rpcss服务</p>
+<h4 id="RPC隔离"><a href="#RPC隔离" class="headerlink" title="RPC隔离"></a>RPC隔离</h4><p><strong>RpcRt_Init</strong></p>
+<p>hook安装</p>
+<p><strong>RpcStringBindingComposeW hook</strong></p>
+<p>原始函数作用</p>
+<p>生成一个以字符串表示的绑定句柄(bindinghandle)并为此字符串分配内存。因为服务指定了使用本地命名管道作为网络通信介质，所以客户端在建立于服务器的连接时也必须指定相同的管道参数。</p>
+<p>首先判断当前函数返回地址是否在sppc.dll模块空间下.</p>
+<p>sppc.dll是微软软件保护相关的实现,首先将目标alpc端口修改为”SPPCTransportEndpoint-00001”,这个端口是sppsvc.exe注册的.</p>
+<p>然后启动sppsvc服务.</p>
+<p>而后调用原始api.</p>
+<p>这个函数主要对软件保护相关进行了处理,指定了端口,并启动原始服务.</p>
+<p><strong>RpcBindingFromStringBindingW hook</strong></p>
+<p>原始函数作用</p>
+<p>从字符串表示的绑定句柄，创建了一个服务绑定句柄RPCServer_IfHandle。绑定之后客户端便可以请求服务器的服务（调用服务器的函数）。</p>
+<p>首先判断是否是一个活动端口.</p>
+<p>判断调用者的内存空间是否在winspool.drv下,winspool.drv是打印管理相关服务.</p>
+<p>由于是活动端口,当以上条件符合,会调用函数从r0枚举aplc端口,获取PrintSpooler的对应活动端口.</p>
+<p>需要注意的是win8.1之前,该端口名是固定的\RPC Control\spoolss,之后的版本,由spoolsv.exe在系统范围内注册了一个动态的端口.端口映射器\RPC Control\epmapper,hook后绕过了这个端口映射器.</p>
+<p>而后判断此dll是否开启了超时时间的设置,而后调用原始函数,设置超时时间.</p>
+<p><strong>RpcBindingCreateW hook</strong></p>
+<p>快速建立新的rpc连接</p>
+<p>根据情况会指定目标端口,如果uuid&#x3D;&#x3D;RPC interfaceId,并且指定的是本机的rpc.并且是动态端点.并且指定的uuid&#x3D;906B0CE0-C70B-1067-B317-00DD010662DA</p>
+<p>指定为:samss lpc,这里为什么指定这个端口呢.</p>
+<p>samss lpc是lsass.exe的端口,本地安全服务</p>
+<p><strong>RpcBindingInqAuthClientEx hook</strong></p>
+<p>获取发出远程调用的客户端的扩展信息</p>
+<p>这里主要对返回值做了处理,某些特殊情况下会获得失败的返回值,如宿主机安装了某些杀软</p>
+<p><strong>NdrClientCallX</strong></p>
+<p>没做什么特殊的处理,只是打印了一些日志,进行了一些调用的监控.</p>
+<p><strong>Ndr64AsyncClientCall</strong></p>
+<p>这个函数是异步的,主要在uac提权相关会用.</p>
+<p><strong>RpcAsyncCompleteCall</strong></p>
+<p>实现权限相关</p>
+<p>&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;&#x3D;</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>SandboxIE源码分析</div>
+      <div>http://example.com/2022/12/27/SandboxIE源码分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ash</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2022年12月27日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/12/27/CVE-2021-44228%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/" title="CVE-2021-44228漏洞分析">
+                        <span class="hidden-mobile">CVE-2021-44228漏洞分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
