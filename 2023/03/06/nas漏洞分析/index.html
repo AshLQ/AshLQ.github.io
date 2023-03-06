@@ -1,0 +1,677 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="Ash">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="tags:CVE-2022-34747 漏洞分析与利用1.漏洞描述该漏洞于2022-09-06披露,Zyxel NAS326固件版本的格式字符串漏洞,允许攻击者通过精心制造的UDP数据包实现RCE. 2.漏洞分析 该漏洞已在新版本固件中被修复,不过在官网下载中心还可以下载到有漏洞的固件版本用于分析.   NAS326的设备固件上次更新是在1年多前了,版本不连续,不利于对比分析. 所以换成NAS54">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Zyxel Nas漏洞分析与利用 cve-2022-34747">
+<meta property="og:url" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/index.html">
+<meta property="og:site_name" content="Ash blog">
+<meta property="og:description" content="tags:CVE-2022-34747 漏洞分析与利用1.漏洞描述该漏洞于2022-09-06披露,Zyxel NAS326固件版本的格式字符串漏洞,允许攻击者通过精心制造的UDP数据包实现RCE. 2.漏洞分析 该漏洞已在新版本固件中被修复,不过在官网下载中心还可以下载到有漏洞的固件版本用于分析.   NAS326的设备固件上次更新是在1年多前了,版本不连续,不利于对比分析. 所以换成NAS54">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160418943.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160616277.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160744481.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302161342337.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302161433398.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302165914910.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303101402314.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303102123573.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303105818447.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303104458317.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303104056715.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303110155300.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303111024318.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303140825431.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303142600996.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144607984.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144635166.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/image-20230202200556786.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303145551014.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144303673.png">
+<meta property="og:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/image-20230127170119545.png">
+<meta property="article:published_time" content="2023-03-06T07:40:19.857Z">
+<meta property="article:modified_time" content="2023-03-06T07:42:20.775Z">
+<meta property="article:author" content="Ash">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160418943.png">
+  
+  
+  
+  <title>Zyxel Nas漏洞分析与利用 cve-2022-34747 - Ash blog</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.3","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 6.3.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Ash Blog</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle">Zyxel Nas漏洞分析与利用 cve-2022-34747</span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2023-03-06 15:40" pubdate>
+          2023年3月6日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Zyxel Nas漏洞分析与利用 cve-2022-34747</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <h2 id="tags"><a href="#tags" class="headerlink" title="tags:"></a>tags:</h2><h1 id="CVE-2022-34747-漏洞分析与利用"><a href="#CVE-2022-34747-漏洞分析与利用" class="headerlink" title="CVE-2022-34747 漏洞分析与利用"></a>CVE-2022-34747 漏洞分析与利用</h1><h2 id="1-漏洞描述"><a href="#1-漏洞描述" class="headerlink" title="1.漏洞描述"></a>1.漏洞描述</h2><p>该漏洞于2022-09-06披露,Zyxel NAS326固件版本的格式字符串漏洞,允许攻击者通过精心制造的UDP数据包实现RCE.</p>
+<h2 id="2-漏洞分析"><a href="#2-漏洞分析" class="headerlink" title="2.漏洞分析"></a>2.漏洞分析</h2><p> 该漏洞已在新版本固件中被修复,不过在官网下载中心还可以下载到有漏洞的固件版本用于分析.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160418943.png" srcset="/img/loading.gif" lazyload alt="image-20230302160418943"></p>
+<p>NAS326的设备固件上次更新是在1年多前了,版本不连续,不利于对比分析.</p>
+<p>所以换成NAS540设备的固件列表看看,发现NAS540的漏洞临界版本是在1个月前更新的,所以选择这两个固件进行对比分析,定位漏洞模块.</p>
+<p>V5.21(AATB.8)</p>
+<p>V5.21(AATB.9)</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160616277.png" srcset="/img/loading.gif" lazyload alt="image-20230302160616277"></p>
+<p> NAS540</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302160744481.png" srcset="/img/loading.gif" lazyload alt="image-20230302160744481"></p>
+<p>下载固件后使用binwalk命令对固件进行解包,得到如下结构.其实解包之后,差别特别明显,漏洞修复版本直接去掉了nsuagent这个程序,在其他的路径中也没有找到.(多出来的etc,lib是我后面修复动态链接库创建的)</p>
+<p>AATB.8</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302161342337.png" srcset="/img/loading.gif" lazyload alt="image-20230302161342337"></p>
+<p>AATB.9</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302161433398.png" srcset="/img/loading.gif" lazyload alt="image-20230302161433398"></p>
+<p>由于是格式化字符串漏洞,所以主要需要定位一些格式字符处理的相关函数,在导入函数里面查找到了如下调用,通过交叉引用发现了此处的格式化字符串处理问题.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230302165914910.png" srcset="/img/loading.gif" lazyload alt="image-20230302165914910"></p>
+<p>这是一个日志处理的函数,会将生产的日志信息,格式化后写入本地文件中,但是问题是这里的格式化字符串可控的.如果日志信息也可控,这里就是一个漏洞.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303101402314.png" srcset="/img/loading.gif" lazyload alt="image-20230303101402314"></p>
+<p> 在sub_1aee4中,可以看到用户名密码的日志信息通过调用此函数被生产,是可以引起漏洞的一个位置.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303102123573.png" srcset="/img/loading.gif" lazyload alt="image-20230303102123573"></p>
+<p>下面开始分析程序的执行流程,如何执行到这个位置.</p>
+<p>在main函数中,会获取参数”p:xxxx”,然后调用sub_19a80-&gt;sub_15408,其中会加载2个路径下的文件</p>
+<p>&#x2F;etc&#x2F;apche&#x2F;pubkey.pem</p>
+<p>&#x2F;etc&#x2F;apche&#x2F;testkey.pem</p>
+<p>如果加载失败,会直接退出程序,导致流程无法继续,所以在后面调试漏洞时,要在这个路径放置证书文件.</p>
+<p>调用成功后,将获取到的参数p:使用atoi函数转换为整形.最终调用sub_1aee4.</p>
+<p><img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303105818447.png" srcset="/img/loading.gif" lazyload alt="image-20230303105818447"></p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303104458317.png" srcset="/img/loading.gif" lazyload alt="image-20230303104458317"></p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303104056715.png" srcset="/img/loading.gif" lazyload alt="image-20230303104056715"></p>
+<p>sub_1aee4-&gt;sub_159f8中会将传入的参数p,作为用于udp通信的端口.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303110155300.png" srcset="/img/loading.gif" lazyload alt="image-20230303110155300"></p>
+<p>然后接收长度最大为0x10d8长度的数据包,接收数据包之后通过sub_1bc48对数据包的格式进行了验证.</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303111024318.png" srcset="/img/loading.gif" lazyload alt="image-20230303111024318"></p>
+<p>验证的步骤:</p>
+<p>1.数据包的前两个字节左移8位,然后或运算前2个字节,判断结果是否为0x42</p>
+<p>2.数据包的偏移0xA的2字节数据左移8位,然后或运算偏移0xA处2字节的高位,判断结果是否大于0xC</p>
+<p>通过后返回偏移为3处的数据</p>
+<p>3.在此函数外部,对偏移为3处数据进行了判断,如果为0x41,才会结束当前循环,停止继续接收数据,向下处理.</p>
+<p>  <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303140825431.png" srcset="/img/loading.gif" lazyload alt="image-20230303140825431"></p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303142600996.png" srcset="/img/loading.gif" lazyload alt="image-20230303142600996"></p>
+<p>后面还有几处验证,比较简单</p>
+<p>判断字符串中是否有参数</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144607984.png" srcset="/img/loading.gif" lazyload alt="image-20230303144607984"></p>
+<p> 一些固定数据的判断</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144635166.png" srcset="/img/loading.gif" lazyload alt="image-20230303144635166"></p>
+<p>分析到此处,开始通过调试的方式辅助分析验证.</p>
+<p>程序是arm架构的,使用qemu-arm模拟器创建调试端口配合ida动态调试.</p>
+<p>首先要手动建立好软链接(这一步或许可以通过脚本实现?)</p>
+<p>而后要创建前面所说的2个证书文件,都可以在解包后的文件中找到.</p>
+<p><img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/image-20230202200556786.png" srcset="/img/loading.gif" lazyload alt="image-20230202200556786"></p>
+<p>通过命令创建调试端口,指定udp通信端口为1111</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">qemu-arm -g 7777 -L ./ nsuagent &quot;-p 1111&quot;<br></code></pre></td></tr></table></figure>
+
+<p>运行至此处后,需要构造一个UDP数据包给漏洞程序接收</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303145551014.png" srcset="/img/loading.gif" lazyload alt="image-20230303145551014"></p>
+<p>构造POC如下,使用此命令发送</p>
+<p> <img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%5Cimage-20230303144303673.png" srcset="/img/loading.gif" lazyload alt="image-20230303144303673"></p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs shell">echo &quot;$(&lt;/root/桌面/poc)&quot; |nc -vu 192.168.164.129 1111<br></code></pre></td></tr></table></figure>
+
+<p>该程序开启了dep保护,需要在栈中构造rop进行利用.</p>
+<p><img src="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/image-20230127170119545.png" srcset="/img/loading.gif" lazyload alt="image-20230127170119545"></p>
+<p>&#x2F;&#x2F;todo rop构造</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>Zyxel Nas漏洞分析与利用 cve-2022-34747</div>
+      <div>http://example.com/2023/03/06/nas漏洞分析/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>Ash</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2023年3月6日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="SandboxIE源码分析">
+                        <span class="hidden-mobile">SandboxIE源码分析</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.2/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
