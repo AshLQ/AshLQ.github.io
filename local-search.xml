@@ -4,6 +4,19 @@
   
   
   <entry>
+    <title>Rootkit和BootKit读书笔记</title>
+    <link href="/2023/04/18/Rootkit%E5%92%8CBootKit%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/"/>
+    <url>/2023/04/18/Rootkit%E5%92%8CBootKit%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/</url>
+    
+    <content type="html"><![CDATA[<h3 id="Anti-Virtual技术"><a href="#Anti-Virtual技术" class="headerlink" title="Anti-Virtual技术"></a>Anti-Virtual技术</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs assembly">mov eax,&#x27;VMXh&#x27;<br>mov ebx, 0<br>mov ecx,0Ah,<br>mov edx,&#x27;VX&#x27;,<br>in eax,dx<br></code></pre></td></tr></table></figure><p>经测试,在in eax,dx时会直接异常.</p>]]></content>
+    
+    
+    
+  </entry>
+  
+  
+  
+  <entry>
     <title>Zyxel Nas漏洞分析与利用 cve-2022-34747</title>
     <link href="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/"/>
     <url>/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/</url>
