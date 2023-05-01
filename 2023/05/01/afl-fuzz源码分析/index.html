@@ -16,21 +16,21 @@
   <meta name="author" content="Ash">
   <meta name="keywords" content="">
   
-    <meta name="description" content="winafl搭建对winafl的搭建做个记录. 1.从github上拉取DynamoRIO,这里可以直接下载release编译好的,自己编译需要安装active perl ,不然没法编译,还挺麻烦的. release: 1https:&#x2F;&#x2F;github.com&#x2F;DynamoRIO&#x2F;dynamorio&#x2F;releases&#x2F;  自己编译DynamoRIO,拉取源码 1git clone https:&#x2F;&#x2F;g">
+    <meta name="description" content="title:afl-fuzz源码分析afl-fuzz源码分析afl-gccafl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等. 全局变量12345static u8*  as_path;                &#x2F;* Path to the AFL &amp;#x27;as&amp;#x27; wrapper      *&#x2F;static">
 <meta property="og:type" content="article">
-<meta property="og:title" content="winafl搭建">
-<meta property="og:url" content="http://example.com/2023/04/26/winafl%E6%90%AD%E5%BB%BA/index.html">
+<meta property="og:title" content="Ash blog">
+<meta property="og:url" content="http://example.com/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="Ash blog">
-<meta property="og:description" content="winafl搭建对winafl的搭建做个记录. 1.从github上拉取DynamoRIO,这里可以直接下载release编译好的,自己编译需要安装active perl ,不然没法编译,还挺麻烦的. release: 1https:&#x2F;&#x2F;github.com&#x2F;DynamoRIO&#x2F;dynamorio&#x2F;releases&#x2F;  自己编译DynamoRIO,拉取源码 1git clone https:&#x2F;&#x2F;g">
+<meta property="og:description" content="title:afl-fuzz源码分析afl-fuzz源码分析afl-gccafl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等. 全局变量12345static u8*  as_path;                &#x2F;* Path to the AFL &amp;#x27;as&amp;#x27; wrapper      *&#x2F;static">
 <meta property="og:locale" content="zh_CN">
-<meta property="article:published_time" content="2023-04-25T16:10:01.062Z">
-<meta property="article:modified_time" content="2023-04-25T16:13:59.837Z">
+<meta property="article:published_time" content="2023-05-01T06:44:17.376Z">
+<meta property="article:modified_time" content="2023-05-01T08:48:49.311Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary_large_image">
   
   
   
-  <title>winafl搭建 - Ash blog</title>
+  <title>Ash blog</title>
 
   <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
 
@@ -195,7 +195,7 @@
       <div class="banner-text text-center fade-in-up">
         <div class="h2">
           
-            <span id="subtitle">winafl搭建</span>
+            <span id="subtitle"></span>
           
         </div>
 
@@ -206,8 +206,8 @@
     
       <span class="post-meta">
         <i class="iconfont icon-date-fill" aria-hidden="true"></i>
-        <time datetime="2023-04-26 00:10" pubdate>
-          2023年4月26日 凌晨
+        <time datetime="2023-05-01 14:44" pubdate>
+          2023年5月1日 下午
         </time>
       </span>
     
@@ -218,7 +218,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          1.2k 字
+          3.3k 字
         
       </span>
     
@@ -229,7 +229,7 @@
         
         
         
-          10 分钟
+          28 分钟
         
       </span>
     
@@ -267,43 +267,60 @@
         <div id="board">
           <article class="post-content mx-auto">
             <!-- SEO header -->
-            <h1 style="display: none">winafl搭建</h1>
+            <h1 style="display: none"></h1>
             
             
               <div class="markdown-body">
                 
-                <h1 id="winafl搭建"><a href="#winafl搭建" class="headerlink" title="winafl搭建"></a>winafl搭建</h1><p>对winafl的搭建做个记录.</p>
-<p>1.从github上拉取DynamoRIO,这里可以直接下载release编译好的,自己编译需要安装active perl</p>
-<p>,不然没法编译,还挺麻烦的.</p>
-<p>release:</p>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">https:<span class="hljs-regexp">//gi</span>thub.com<span class="hljs-regexp">/DynamoRIO/</span>dynamorio<span class="hljs-regexp">/releases/</span><br></code></pre></td></tr></table></figure>
+                <hr>
+<h2 id="title-afl-fuzz源码分析"><a href="#title-afl-fuzz源码分析" class="headerlink" title="title:afl-fuzz源码分析"></a>title:afl-fuzz源码分析</h2><h1 id="afl-fuzz源码分析"><a href="#afl-fuzz源码分析" class="headerlink" title="afl-fuzz源码分析"></a>afl-fuzz源码分析</h1><h2 id="afl-gcc"><a href="#afl-gcc" class="headerlink" title="afl-gcc"></a>afl-gcc</h2><p>afl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等.</p>
+<h5 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a><strong>全局变量</strong></h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u8*  as_path;                <span class="hljs-comment">/* Path to the AFL &#x27;as&#x27; wrapper      */</span><br><span class="hljs-type">static</span> u8** cc_params;              <span class="hljs-comment">/* Parameters passed to the real CC  */</span><br><span class="hljs-type">static</span> u32  cc_par_cnt = <span class="hljs-number">1</span>;         <span class="hljs-comment">/* Param count, including argv0      */</span><br><span class="hljs-type">static</span> u8   be_quiet,               <span class="hljs-comment">/* Quiet mode                        */</span><br>            clang_mode;             <span class="hljs-comment">/* Invoked as afl-clang*?            */</span><br></code></pre></td></tr></table></figure>
 
-<p>自己编译DynamoRIO,拉取源码</p>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">git clone https:<span class="hljs-regexp">//gi</span>thub.com<span class="hljs-regexp">/DynamoRIO/</span>dynamorio.git<br></code></pre></td></tr></table></figure>
+<p>as_path:afl-as的路径</p>
+<p>cc_params:调用gcc或者clang的参数</p>
+<p>cc_par_cnt:gcc clang参数数量</p>
+<p>be_quiet:默认模式</p>
+<p>clang_mode:是否使用afl-clang</p>
+<h5 id="main"><a href="#main" class="headerlink" title="main"></a><strong>main</strong></h5><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">int</span> <span class="hljs-title function_">main</span><span class="hljs-params">(<span class="hljs-type">int</span> argc, <span class="hljs-type">char</span>** argv)</span> &#123;<br><br>  <span class="hljs-keyword">if</span> (isatty(<span class="hljs-number">2</span>) &amp;&amp; !getenv(<span class="hljs-string">&quot;AFL_QUIET&quot;</span>)) &#123;<br><br>    SAYF(cCYA <span class="hljs-string">&quot;afl-cc &quot;</span> cBRI VERSION cRST <span class="hljs-string">&quot; by &lt;lcamtuf@google.com&gt;\n&quot;</span>);<br><br>  &#125; <span class="hljs-keyword">else</span> be_quiet = <span class="hljs-number">1</span>;<br><br>  <span class="hljs-keyword">if</span> (argc &lt; <span class="hljs-number">2</span>) &#123;<br><br>    SAYF(<span class="hljs-string">&quot;\n&quot;</span><br>         <span class="hljs-string">&quot;This is a helper application for afl-fuzz. It serves as a drop-in replacement\n&quot;</span><br>         <span class="hljs-string">&quot;for gcc or clang, letting you recompile third-party code with the required\n&quot;</span><br>         <span class="hljs-string">&quot;runtime instrumentation. A common use pattern would be one of the following:\n\n&quot;</span><br><br>         <span class="hljs-string">&quot;  CC=%s/afl-gcc ./configure\n&quot;</span><br>         <span class="hljs-string">&quot;  CXX=%s/afl-g++ ./configure\n\n&quot;</span><br><br>         <span class="hljs-string">&quot;You can specify custom next-stage toolchain via AFL_CC, AFL_CXX, and AFL_AS.\n&quot;</span><br>         <span class="hljs-string">&quot;Setting AFL_HARDEN enables hardening optimizations in the compiled code.\n\n&quot;</span>,<br>         BIN_PATH, BIN_PATH);<br><br>    <span class="hljs-built_in">exit</span>(<span class="hljs-number">1</span>);<br><br>  &#125;<br><br>  find_as(argv[<span class="hljs-number">0</span>]);<br><br>  edit_params(argc, argv);<br><br>  execvp(cc_params[<span class="hljs-number">0</span>], (<span class="hljs-type">char</span>**)cc_params);<br><br>  FATAL(<span class="hljs-string">&quot;Oops, failed to execute &#x27;%s&#x27; - check your PATH&quot;</span>, cc_params[<span class="hljs-number">0</span>]);<br><br>  <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;<br><br>&#125;<br></code></pre></td></tr></table></figure>
 
-<p>下载安装perl</p>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">https:<span class="hljs-regexp">//</span>www.activestate.com<span class="hljs-regexp">/products/</span>perl/<br></code></pre></td></tr></table></figure>
+<p>主要功能集中在find_as,edit_params函数,最后执行execvp</p>
+<h5 id="find-as"><a href="#find-as" class="headerlink" title="find_as"></a>find_as</h5><p>函数功能是寻找”fake” gcc汇编程序,实际上是通过环境变量”AFL_PATH”或者afl-gcc的当前执行目录寻找afl-as的路径.</p>
+<h5 id="edit-params"><a href="#edit-params" class="headerlink" title="edit_params"></a>edit_params</h5><p>函数功能是,将argv的参数复制到cc_params,以及做一些参数的处理.</p>
+<p>首先alloc一个(argc+128)*8字节大小的内存</p>
+<p>1.检查当前执行程序名是否为afl-clangxx,如果是</p>
+<p>​	clang_mode&#x3D;1,表示使用afl-clang模式</p>
+<p>​	如果是clang++</p>
+<p>​	尝试获取AFL_CXX环境变量.或者使用默认值”clang++”,赋值给cc_params[0]</p>
+<p>​	如果不是clang++</p>
+<p>​	尝试获取AFL_CC环境变量.或者使用默认值”clang”,赋值给cc_params[0]</p>
+<p>如果不是afl-clangxx,会认为是apple平台并做一些处理,这里不做赘述.</p>
+<p>2.while循环,遍历argv[1]和之后的参数,做一些处理.</p>
+<p>参数:-B是否指定了汇编器afl-as的路径,如果是默认模式,直接跳过.</p>
+<p>参数:-integrated-as和-pipe 直接跳过不做处理.</p>
+<p>参数:-fsanitize&#x3D;address和-fsanitize&#x3D;memory,gcc的编译选项,LLVM的组件Asan,将asan_set&#x3D;1,这两个参数是Asan用于检测内存访问越界,内存泄露问题的.如果编译时插入一些安全检查,需要记录和跟踪信息,可以加上.</p>
+<p>参数:FORTIFY_SOURCE,将fortify_set &#x3D; 1,gcc编译时会在一些容易出现漏洞的函数插入一些安全检查,如memcpy,strcpy…</p>
+<p>3.while结束,对前面做的一些标记做参数处理.</p>
+<p>-B as_path,find_as里面寻找到的afl-as路径.</p>
+<p>clang_mode为1 设置-no-integrated-as</p>
+<p>如果环境变量存在AFL_HARDEN.设置gcc -fstack-protector-all和-D_FORTIFY_SOURCE&#x3D;2,这个afl的编译选项,会开启一些编译时的安全保护.<br>如果asan_set为1,设置了些编译时的内存错误检测,设置环境变量AFL_USE_ASAN为1</p>
+<p>编译选项asan和msan相关的,添加这些编译选项,利于内存错误的分析</p>
+<p>一些获取环境变量AFL_USE_ASAN,AFL_USE_MSAN,AFL_HARDEN,设置了一些-U_FORTIFY_SOURCE和-fsanitize&#x3D;memory参数,只是此处AFL_USE_ASAN和AFL_USE_MSAN不能同时设置,因为使用asan和msan编译同一源代码时,会对运行速度造成影响,afl-fuzz可能会觉得会fuzz效率有影响??</p>
+<p>编译器优化相关,添加这些编译选项,禁止某些优化,利于afl-fuzz更好的探测一些漏洞,但是程序会变慢,可能会对fuzz效率造成影响.</p>
+<p>获取环境变量AFL_DONT_OPTIMIZE,存在</p>
+<p>设置gcc编译选项-g -O3 -funroll-loops -D__AFL_COMPILER&#x3D;1 -DFUZZING_BUILD_MODE_UNSAFE_FOR_PRODUCTION&#x3D;1</p>
+<p>编译器内置函数优化相关的一些编译选项,内置函数可能不安全,禁用可能会导致程序变慢.</p>
+<p>获取环境变量AFL_NO_BUILTIN,存在</p>
+<p>一些函数不使用编译器内置的,如下:</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><code class="hljs c">cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strcmp&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strncmp&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strcasecmp&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strncasecmp&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-memcmp&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strstr&quot;</span>;<br>cc_params[cc_par_cnt++] = <span class="hljs-string">&quot;-fno-builtin-strcasestr&quot;</span>;<br></code></pre></td></tr></table></figure>
 
-<p>打开Developer Command Prompt for VS 2019,根据你自己的vs版本</p>
-<p>编译32位版本,</p>
-<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">mkdir build32 &amp; <span class="hljs-keyword">cd</span> build32<br>cmake -A Win32 <span class="hljs-string">..</span><br>cmake <span class="hljs-params">--build</span> . <span class="hljs-params">--config</span> RelWithDebInfo<br></code></pre></td></tr></table></figure>
 
-<p>编译64位版本</p>
-<figure class="highlight jboss-cli"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><code class="hljs jboss-cli">mkdir build64 &amp; <span class="hljs-keyword">cd</span> build64<br>cmake -A x64 <span class="hljs-string">..</span><br>cmake <span class="hljs-params">--build</span> . <span class="hljs-params">--config</span> RelWithDebInfo<br></code></pre></td></tr></table></figure>
 
-<p>2.从github上拉取winafl</p>
-<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk">git clone --recursive https:<span class="hljs-regexp">//gi</span>thub.com<span class="hljs-regexp">/googleprojectzero/</span>winafl<br></code></pre></td></tr></table></figure>
 
-<p>编译winafl,32位,这里-DDynamoRIO_DIR要更改为刚刚编译好的目录</p>
-<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">mkdir <span class="hljs-keyword">build32</span><br><span class="hljs-keyword"></span>cd <span class="hljs-keyword">build32</span><br><span class="hljs-keyword"></span>cmake -G<span class="hljs-string">&quot;Visual Studio 16 2019&quot;</span> -A Win32 .. -DDynamoRIO_DIR=yourpath dynamorio\<span class="hljs-keyword">build32\cmake</span><br><span class="hljs-keyword"></span>cmake --<span class="hljs-keyword">build </span>. --<span class="hljs-built_in">config</span> Release<br></code></pre></td></tr></table></figure>
 
-<p>64位</p>
-<figure class="highlight mipsasm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs mipsasm">mkdir <span class="hljs-keyword">build64</span><br><span class="hljs-keyword"></span>cd <span class="hljs-keyword">build64</span><br><span class="hljs-keyword"></span>cmake -G<span class="hljs-string">&quot;Visual Studio 16 2019&quot;</span> -A x64 .. -DDynamoRIO_DIR=yourpath dynamorio\<span class="hljs-keyword">build64\cmake</span><br><span class="hljs-keyword"></span>cmake --<span class="hljs-keyword">build </span>. --<span class="hljs-built_in">config</span> Release<br></code></pre></td></tr></table></figure>
 
-<p>如果你的vs是其他版本,要注意编译命令是有些区别的</p>
-<figure class="highlight llvm"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs llvm">cmake -G <span class="hljs-string">&quot;Visual Studio 16 2019&quot;</span> -A Win<span class="hljs-number">32</span>   <span class="hljs-comment">;x32</span><br>cmake -G <span class="hljs-string">&quot;Visual Studio 16 2019&quot;</span> -A <span class="hljs-keyword">x</span><span class="hljs-number">64</span>     <span class="hljs-comment">;x64  默认架构为Win64</span><br>cmake -G <span class="hljs-string">&quot;Visual Studio 15 2017&quot;</span>            <span class="hljs-comment">;x32  默认架构为Win32</span><br>cmake -G <span class="hljs-string">&quot;Visual Studio 15 2017 Win64&quot;</span>      <span class="hljs-comment">;x64</span><br></code></pre></td></tr></table></figure>
 
-<p>编译好的exe在build32\bin\Release目录下.</p>
+
+
 
                 
               </div>
@@ -321,8 +338,8 @@
 
   <div class="license-box my-3">
     <div class="license-title">
-      <div>winafl搭建</div>
-      <div>http://example.com/2023/04/26/winafl搭建/</div>
+      <div></div>
+      <div>http://example.com/2023/05/01/afl-fuzz源码分析/</div>
     </div>
     <div class="license-meta">
       
@@ -334,7 +351,7 @@
       
         <div class="license-meta-item license-meta-date">
           <div>发布于</div>
-          <div>2023年4月26日</div>
+          <div>2023年5月1日</div>
         </div>
       
       
@@ -366,18 +383,12 @@
                   <article class="post-prev col-6">
                     
                     
-                      <a href="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" title="">
-                        <i class="iconfont icon-arrowleft"></i>
-                        <span class="hidden-mobile"></span>
-                        <span class="visible-mobile">上一篇</span>
-                      </a>
-                    
                   </article>
                   <article class="post-next col-6">
                     
                     
-                      <a href="/2023/04/18/Rootkit%E5%92%8CBootKit%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/" title="Rootkit和BootKit读书笔记">
-                        <span class="hidden-mobile">Rootkit和BootKit读书笔记</span>
+                      <a href="/2023/04/26/winafl%E6%90%AD%E5%BB%BA/" title="winafl搭建">
+                        <span class="hidden-mobile">winafl搭建</span>
                         <span class="visible-mobile">下一篇</span>
                         <i class="iconfont icon-arrowright"></i>
                       </a>
