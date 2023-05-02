@@ -190,7 +190,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="afl-fuzz源码分析"><a href="#afl-fuzz源码分析" class="headerlink" title="afl-fuzz源码分析"></a>afl-fuzz源码分析</h1><h2 id="GCC编译流程"><a href="#GCC编译流程" class="headerlink" title="GCC编译流程"></a>GCC编译流程</h2>
+          <h1 id="afl-fuzz源码分析"><a href="#afl-fuzz源码分析" class="headerlink" title="afl-fuzz源码分析"></a>afl-fuzz源码分析</h1><h2 id="GCC编译流程"><a href="#GCC编译流程" class="headerlink" title="GCC编译流程"></a>GCC编译流程</h2><p><img src="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20230503010838707.png"></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#more" rel="contents">
@@ -257,6 +257,7 @@
 
       
           <h1 id="winafl搭建"><a href="#winafl搭建" class="headerlink" title="winafl搭建"></a>winafl搭建</h1><p>对winafl的搭建做个记录.</p>
+<p>1.从github上拉取DynamoRIO,这里可以直接下载release编译好的,自己编译需要安装active perl</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/04/26/winafl%E6%90%AD%E5%BB%BA/#more" rel="contents">
@@ -323,6 +324,8 @@
 
       
           <h3 id="Anti-Virtual技术"><a href="#Anti-Virtual技术" class="headerlink" title="Anti-Virtual技术"></a>Anti-Virtual技术</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">mov eax,&#x27;VMXh&#x27;</span><br><span class="line">mov ebx, 0</span><br><span class="line">mov ecx,0Ah,</span><br><span class="line">mov edx,&#x27;VX&#x27;,</span><br><span class="line">in eax,dx</span><br></pre></td></tr></table></figure>
+
+<p>经测试,在in eax,dx时会直接异常.</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/04/18/Rootkit%E5%92%8CBootKit%E8%AF%BB%E4%B9%A6%E7%AC%94%E8%AE%B0/#more" rel="contents">
@@ -388,7 +391,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h2 id="tags"><a href="#tags" class="headerlink" title="tags:"></a>tags:</h2><h1 id="CVE-2022-34747-漏洞分析与利用"><a href="#CVE-2022-34747-漏洞分析与利用" class="headerlink" title="CVE-2022-34747 漏洞分析与利用"></a>CVE-2022-34747 漏洞分析与利用</h1>
+          <h2 id="tags"><a href="#tags" class="headerlink" title="tags:"></a>tags:</h2><h1 id="CVE-2022-34747-漏洞分析与利用"><a href="#CVE-2022-34747-漏洞分析与利用" class="headerlink" title="CVE-2022-34747 漏洞分析与利用"></a>CVE-2022-34747 漏洞分析与利用</h1><h2 id="1-漏洞描述"><a href="#1-漏洞描述" class="headerlink" title="1.漏洞描述"></a>1.漏洞描述</h2>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/03/06/nas%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/#more" rel="contents">
@@ -455,6 +458,7 @@
 
       
           <h1 id="1-内核回调"><a href="#1-内核回调" class="headerlink" title="1.内核回调"></a>1.内核回调</h1><p><strong>SbieDrv.sys SbieDll.dll</strong> </p>
+<p><strong>目录结构:</strong></p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/27/SandboxIE%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/#more" rel="contents">
@@ -521,6 +525,7 @@
 
       
           <h5 id="环境搭建"><a href="#环境搭建" class="headerlink" title="环境搭建"></a>环境搭建</h5><p>idea创建maven项目,引入对应log4j版本</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">&lt;dependency&gt;</span><br><span class="line">          &lt;groupId&gt;org.apache.logging.log4j&lt;/groupId&gt;</span><br><span class="line">          &lt;artifactId&gt;log4j-core&lt;/artifactId&gt;</span><br><span class="line">          &lt;version&gt;<span class="number">2.14</span><span class="number">.1</span>&lt;/version&gt;</span><br><span class="line">&lt;/dependency&gt;</span><br></pre></td></tr></table></figure>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/27/CVE-2021-44228%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90/#more" rel="contents">
@@ -588,6 +593,7 @@
       
           <p>这块内存已被释放</p>
 <p> <img src="/2022/12/27/CVE-2013-1347%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8/image-20220102112450910.png" alt="image-20220102112450910"></p>
+<p>通过调用CSpanElement::CreateElement函数创建span元素</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/27/CVE-2013-1347%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8/#more" rel="contents">
@@ -654,6 +660,7 @@
 
       
           <h1 id="Fuzzing101-01"><a href="#Fuzzing101-01" class="headerlink" title="Fuzzing101__01"></a>Fuzzing101__01</h1><p>CVE-2019-13228漏洞,xpdf-3.02 parse.cc文件getObj函数的无限递归漏洞,可用于DDos攻击 <img src="/2022/12/27/Fuzzing101__01/%E5%9B%BE%E7%89%872.png"> </p>
+<p>使用afl++进行fuzz 编译 Export LLVM_CONFIG&#x3D;”llvm-config-11” CC&#x3D;$HOME&#x2F;AFLplusplus&#x2F;afl-clang-fast CXX&#x3D;$HOME&#x2F;AFLplusplus&#x2F;afl-clang-fast Make&amp;&amp;Make install </p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/27/Fuzzing101__01/#more" rel="contents">
@@ -719,7 +726,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="v8漏洞练习笔记-starctf2019-oob"><a href="#v8漏洞练习笔记-starctf2019-oob" class="headerlink" title="v8漏洞练习笔记_starctf2019 oob"></a>v8漏洞练习笔记_starctf2019 oob</h1><h5 id="v8内存结构"><a href="#v8内存结构" class="headerlink" title="v8内存结构"></a>v8内存结构</h5>
+          <h1 id="v8漏洞练习笔记-starctf2019-oob"><a href="#v8漏洞练习笔记-starctf2019-oob" class="headerlink" title="v8漏洞练习笔记_starctf2019 oob"></a>v8漏洞练习笔记_starctf2019 oob</h1><h5 id="v8内存结构"><a href="#v8内存结构" class="headerlink" title="v8内存结构"></a>v8内存结构</h5><p>v8变量内存结构,新版v8使用了指针压缩,基址存于R13寄存器,指针通过32为存储,最后一位表示tag,为1时会与R13中的基址进行运算 </p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/12/27/v8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0_starctf2019%20oob/#more" rel="contents">
@@ -792,6 +799,7 @@
 
       
           <h3 id="1-漏洞信息"><a href="#1-漏洞信息" class="headerlink" title="1.漏洞信息"></a>1.漏洞信息</h3><p>CVE-2021-26411 该漏洞存在于iexplore.exe mshtml.dll模块,在JS9引擎处理dom对象时,由于未对nodevalue对象的有效性做判断,所导致的UAF漏洞,该漏洞可实现RCE.</p>
+<h3 id="2-漏洞分析"><a href="#2-漏洞分析" class="headerlink" title="2.漏洞分析"></a>2.漏洞分析</h3>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2022/01/19/CVE-2021-26411%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E6%8A%A5%E5%91%8A/#more" rel="contents">
