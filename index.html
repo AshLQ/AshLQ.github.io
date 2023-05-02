@@ -231,7 +231,7 @@
       
       <a class="index-excerpt index-excerpt__noimg" href="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" target="_self">
         <div>
-          afl-fuzz源码分析afl-gccafl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等,指定汇编器为afl-as. 全局变量12345static u8*  as_path;                /* Path to the AFL &#x27;as&#x27; wrapper      */static u8**
+          afl-fuzz源码分析GCC编译流程  预处理（Preprocessing）：对源代码进行预处理，如宏替换、条件编译等，生成经过预处理的源代码。预处理可以通过gcc -E命令单独执行。 编译（Compilation）：将预处理后的源代码翻译成汇编代码（Assembly code），生成.s文件。编译可以通过gcc -S命令单独执行。 汇编（Assembly）：将汇编代码翻译成机器语言的二进制指令
         </div>
       </a>
 

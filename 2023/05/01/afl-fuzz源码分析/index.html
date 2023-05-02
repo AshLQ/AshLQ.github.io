@@ -16,17 +16,19 @@
   <meta name="author" content="Ash">
   <meta name="keywords" content="">
   
-    <meta name="description" content="afl-fuzz源码分析afl-gccafl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等,指定汇编器为afl-as. 全局变量12345static u8*  as_path;                &#x2F;* Path to the AFL &amp;#x27;as&amp;#x27; wrapper      *&#x2F;static u8**">
+    <meta name="description" content="afl-fuzz源码分析GCC编译流程  预处理（Preprocessing）：对源代码进行预处理，如宏替换、条件编译等，生成经过预处理的源代码。预处理可以通过gcc -E命令单独执行。 编译（Compilation）：将预处理后的源代码翻译成汇编代码（Assembly code），生成.s文件。编译可以通过gcc -S命令单独执行。 汇编（Assembly）：将汇编代码翻译成机器语言的二进制指令">
 <meta property="og:type" content="article">
 <meta property="og:title" content="afl-fuzz源码分析">
 <meta property="og:url" content="http://example.com/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/index.html">
 <meta property="og:site_name" content="Ash blog">
-<meta property="og:description" content="afl-fuzz源码分析afl-gccafl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等,指定汇编器为afl-as. 全局变量12345static u8*  as_path;                &#x2F;* Path to the AFL &amp;#x27;as&amp;#x27; wrapper      *&#x2F;static u8**">
+<meta property="og:description" content="afl-fuzz源码分析GCC编译流程  预处理（Preprocessing）：对源代码进行预处理，如宏替换、条件编译等，生成经过预处理的源代码。预处理可以通过gcc -E命令单独执行。 编译（Compilation）：将预处理后的源代码翻译成汇编代码（Assembly code），生成.s文件。编译可以通过gcc -S命令单独执行。 汇编（Assembly）：将汇编代码翻译成机器语言的二进制指令">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20230503010838707.png">
 <meta property="article:published_time" content="2023-05-01T06:44:17.376Z">
-<meta property="article:modified_time" content="2023-05-01T17:23:18.696Z">
+<meta property="article:modified_time" content="2023-05-02T17:09:00.360Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="http://example.com/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20230503010838707.png">
   
   
   
@@ -218,7 +220,7 @@
       <span class="post-meta mr-2">
         <i class="iconfont icon-chart"></i>
         
-          4.8k 字
+          5.4k 字
         
       </span>
     
@@ -229,7 +231,7 @@
         
         
         
-          41 分钟
+          46 分钟
         
       </span>
     
@@ -272,7 +274,14 @@
             
               <div class="markdown-body">
                 
-                <h1 id="afl-fuzz源码分析"><a href="#afl-fuzz源码分析" class="headerlink" title="afl-fuzz源码分析"></a>afl-fuzz源码分析</h1><h2 id="afl-gcc"><a href="#afl-gcc" class="headerlink" title="afl-gcc"></a>afl-gcc</h2><p>afl-gcc本身是编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等,指定汇编器为afl-as.</p>
+                <h1 id="afl-fuzz源码分析"><a href="#afl-fuzz源码分析" class="headerlink" title="afl-fuzz源码分析"></a>afl-fuzz源码分析</h1><h2 id="GCC编译流程"><a href="#GCC编译流程" class="headerlink" title="GCC编译流程"></a>GCC编译流程</h2><p><img src="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/image-20230503010838707.png" srcset="/img/loading.gif" lazyload alt="image-20230503010838707"></p>
+<ol>
+<li>预处理（Preprocessing）：对源代码进行预处理，如宏替换、条件编译等，生成经过预处理的源代码。预处理可以通过<code>gcc -E</code>命令单独执行。</li>
+<li>编译（Compilation）：将预处理后的源代码翻译成汇编代码（Assembly code），生成<code>.s</code>文件。编译可以通过<code>gcc -S</code>命令单独执行。</li>
+<li>汇编（Assembly）：将汇编代码翻译成机器语言的二进制指令（Object code），生成<code>.o</code>文件。汇编可以通过<code>as</code>程序单独执行。</li>
+<li>链接（Linking）：将多个<code>.o</code>文件或库文件（如<code>.a</code>或<code>.so</code>）链接成可执行程序或共享库文件，生成最终的二进制文件。链接可以通过<code>ld</code>程序单独执行，但通常由GCC自动调用。</li>
+</ol>
+<h2 id="afl-gcc"><a href="#afl-gcc" class="headerlink" title="afl-gcc"></a>afl-gcc</h2><p>afl-gcc本身是gcc编译器的封装,通过afl的一些环境变量,设置一些gcc的编译选项,如asan,msan,编译器优化等,指定汇编器为afl-as,生成ob code.</p>
 <h3 id="全局变量"><a href="#全局变量" class="headerlink" title="全局变量"></a><strong>全局变量</strong></h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><code class="hljs c"><span class="hljs-type">static</span> u8*  as_path;                <span class="hljs-comment">/* Path to the AFL &#x27;as&#x27; wrapper      */</span><br><span class="hljs-type">static</span> u8** cc_params;              <span class="hljs-comment">/* Parameters passed to the real CC  */</span><br><span class="hljs-type">static</span> u32  cc_par_cnt = <span class="hljs-number">1</span>;         <span class="hljs-comment">/* Param count, including argv0      */</span><br><span class="hljs-type">static</span> u8   be_quiet,               <span class="hljs-comment">/* Quiet mode                        */</span><br>            clang_mode;             <span class="hljs-comment">/* Invoked as afl-clang*?            */</span><br></code></pre></td></tr></table></figure>
 
 <p>as_path:afl-as的路径</p>
@@ -326,7 +335,7 @@
 
 <p>as_params:gcc传递给as的参数</p>
 <p>input_file:指定输入文件</p>
-<p>modified_file:汇编时进行插桩的文件</p>
+<p>modified_file:afl-as输出的插桩后的汇编文件</p>
 <p>be_quiet:静默模式</p>
 <p>clang_mode:clang编译模式</p>
 <p>pass_thru:是否在汇编时不做插桩.</p>
@@ -334,13 +343,22 @@
 <p>sanitizer:使用asan&#x2F;msan</p>
 <p>inst_ratio:成功执行插桩代码的比例.越高,说明fuzz效率越好.</p>
 <p>as_par_cnt:指定线程运行afl-as</p>
-<h3 id="main-1"><a href="#main-1" class="headerlink" title="main"></a>main</h3><p>首先从环境变量中获取AFL_INST_RATIO,赋值给inst_ratio_str,这个变量代表插桩频率,如果为100,则在每个块中都会插入插桩代码,如果为0,则只插桩函数入口的块.</p>
+<h3 id="main-1"><a href="#main-1" class="headerlink" title="main"></a>main</h3><p>gcc传递过来的参数</p>
+<figure class="highlight awk"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs awk"><span class="hljs-regexp">/home/</span>ash<span class="hljs-regexp">/code/</span>afl-fuzz<span class="hljs-regexp">/as --gdwarf-5 --64 -o /</span>tmp<span class="hljs-regexp">/ccQwLzYy.o /</span>tmp/ccw6hnjr.s <br></code></pre></td></tr></table></figure>
+
+<p>首先从环境变量中获取AFL_INST_RATIO,赋值给inst_ratio_str,这个变量代表插桩频率,如果为100,则在每个块中都会插入插桩代码,如果为0,则只插桩函数入口的块.</p>
 <p>获取当前时间,pid,计算成一个rand_seed,生成随机数.</p>
 <p>edit_params函数对参数进行处理</p>
 <p>获取环境变量AS_LOOP_ENV_VAR,这个环境变量是afl-as重复汇编的次数,默认设置为1.为了解决插桩可能会导致的执行异常情况,多次通过随机值插桩,避免程序出现异常.</p>
 <p>通过检查环境变量AFL_USE_ASAN,AFL_USE_MSAN,判断是否存在这些编译选项,将sanitizer设置为1,并将inst_ratio&#x2F;3,这里做了处理原因如果开启了asan或者msan会导致程序的分支增多,在插桩到这些分支,然后执行,是没有意义的.所以这里直接做了除3处理,将比例减小.</p>
 <p>执行add_instrumentation函数,开始插桩</p>
-<p>fork一个子进程开始执行.</p>
+<p>fork一个子进程执行gas进行汇编,参数</p>
+<figure class="highlight apache"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><code class="hljs apache"><span class="hljs-attribute">as</span> --gdwarf-<span class="hljs-number">5</span> --<span class="hljs-number">64</span> -o /tmp/ccQwLzYy.o /tmp/.afl-<span class="hljs-number">1040</span>-<span class="hljs-number">1683019150</span>.s <br></code></pre></td></tr></table></figure>
+
+<p>gas执行结束后,检测环境变量AFL_KEEP_ASSEMBLY,如果没有就删除掉插桩的汇编文件.</p>
+<h3 id="edit-params-1"><a href="#edit-params-1" class="headerlink" title="edit_params"></a>edit_params</h3><p>主要是做as的参数处理,构造汇编文件名参数,架构,赋值input_file&#x3D;汇编文件.</p>
+<h3 id="add-instrumentation"><a href="#add-instrumentation" class="headerlink" title="add_instrumentation"></a>add_instrumentation</h3><p>插桩函数</p>
+<p>首先获取</p>
 
                 
               </div>
