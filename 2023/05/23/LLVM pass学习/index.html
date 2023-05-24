@@ -31,7 +31,7 @@
 <meta property="og:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522104522517.png">
 <meta property="og:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522105303956.png">
 <meta property="article:published_time" content="2023-05-23T08:29:36.157Z">
-<meta property="article:modified_time" content="2023-05-24T07:30:16.852Z">
+<meta property="article:modified_time" content="2023-05-24T09:27:05.321Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522103826896.png">
@@ -184,7 +184,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-05-24 15:30:16" itemprop="dateModified" datetime="2023-05-24T15:30:16+08:00">2023-05-24</time>
+                <time title="修改时间：2023-05-24 17:27:05" itemprop="dateModified" datetime="2023-05-24T17:27:05+08:00">2023-05-24</time>
               </span>
 
           
@@ -235,11 +235,81 @@
 <h4 id="Basic-Block-基本块"><a href="#Basic-Block-基本块" class="headerlink" title="Basic Block(基本块)"></a>Basic Block(基本块)</h4><p>基本块是LLVM IR的基本执行单元,有若干个指令和标签组成,正常情况下基本块的最后一条指令为跳转指令或返回指令,也叫终结指令.</p>
 <p>还存在一些PHI指令.</p>
 <h4 id="Instruction-指令"><a href="#Instruction-指令" class="headerlink" title="Instruction(指令)"></a>Instruction(指令)</h4><p>LLVM中的最小执行大怒预案,表示一个操作或者一个控制流操作,由操作码和操作数组成.</p>
-<h3 id="LLVM-IR的指令"><a href="#LLVM-IR的指令" class="headerlink" title="LLVM IR的指令"></a>LLVM IR的指令</h3><p>其实与汇编类似.</p>
-<h5 id="ret指令"><a href="#ret指令" class="headerlink" title="ret指令"></a>ret指令</h5><p>返回指令</p>
+<h3 id="LLVM-IR的指令"><a href="#LLVM-IR的指令" class="headerlink" title="LLVM IR的指令"></a>LLVM IR的指令</h3><p>其实与x86汇编类似,重点是一些特殊的其他指令.</p>
+<h4 id="终结指令"><a href="#终结指令" class="headerlink" title="终结指令"></a>终结指令</h4><h5 id="ret"><a href="#ret" class="headerlink" title="ret"></a>ret</h5><p>返回指令</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ret &lt;type&gt; &lt;value&gt;</span><br><span class="line">ret &#123;&#125; &#123;&#125;</span><br><span class="line">ret void</span><br></pre></td></tr></table></figure>
 
-<h5 id="br指令"><a href="#br指令" class="headerlink" title="br指令"></a>br指令</h5><p>跳转指令</p>
+<h5 id="br"><a href="#br" class="headerlink" title="br"></a>br</h5><p>跳转指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">//条件跳转jz,je,jnz,jne.....</span><br><span class="line">br i1&lt;cond&gt;,lable &lt;iftrue&gt;,label &lt;iffalse&gt;</span><br><span class="line">//jmp</span><br><span class="line">br label &lt;dest&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="icmp"><a href="#icmp" class="headerlink" title="icmp"></a>icmp</h5><p>比较指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = icmp &lt;cond&gt; &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt; ; 比较op1,op2是否满足cond</span><br></pre></td></tr></table></figure>
+
+<h5 id="switch"><a href="#switch" class="headerlink" title="switch"></a>switch</h5><p>分支指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">swtich &lt;intty&gt;//类型 &lt;value&gt;//值,lable &lt;defaultdest&gt;//默认分支 [&lt;intty&gt; &lt;val&gt;,label &lt;dest&gt; ...]</span><br></pre></td></tr></table></figure>
+
+<h4 id="二元运算相关"><a href="#二元运算相关" class="headerlink" title="二元运算相关"></a>二元运算相关</h4><h5 id="add"><a href="#add" class="headerlink" title="add"></a>add</h5><p>加法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = add &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="sub"><a href="#sub" class="headerlink" title="sub"></a>sub</h5><p>减法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = sub &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="mul"><a href="#mul" class="headerlink" title="mul"></a>mul</h5><p>乘法</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = mul &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="udiv-x2F-sdiv"><a href="#udiv-x2F-sdiv" class="headerlink" title="udiv&#x2F;sdiv"></a>udiv&#x2F;sdiv</h5><p>udiv无符号除</p>
+<p>sdiv有符号除</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = udiv &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br><span class="line">&lt;result&gt; = udiv exact &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;//如果op1不是op2倍数,就报错.</span><br></pre></td></tr></table></figure>
+
+<h5 id="urem-x2F-srem"><a href="#urem-x2F-srem" class="headerlink" title="urem&#x2F;srem"></a>urem&#x2F;srem</h5><p>无符号取余&#x2F;有符号取余</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = urem &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="按位二元运算相关"><a href="#按位二元运算相关" class="headerlink" title="按位二元运算相关"></a>按位二元运算相关</h4><h5 id="shl"><a href="#shl" class="headerlink" title="shl"></a>shl</h5><p>左移</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = shl &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="lshr-x2F-ashr"><a href="#lshr-x2F-ashr" class="headerlink" title="lshr&#x2F;ashr"></a>lshr&#x2F;ashr</h5><p>逻辑右移&#x2F;算数右移</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = lshr &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="and-x2F-or-x2F-xor"><a href="#and-x2F-or-x2F-xor" class="headerlink" title="and&#x2F;or&#x2F;xor"></a>and&#x2F;or&#x2F;xor</h5><p>按位与&#x2F;按位或&#x2F;按位异或</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = and &lt;ty&gt; &lt;op1&gt;,&lt;op2&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="内存访问和寻址"><a href="#内存访问和寻址" class="headerlink" title="内存访问和寻址"></a>内存访问和寻址</h4><h5 id="静态单赋值"><a href="#静态单赋值" class="headerlink" title="静态单赋值"></a>静态单赋值</h5><p>IR的一种属性.LLVM IR是基于静态单赋值原则设计的</p>
+<p>SSA:在程序中一个变量仅能有一条赋值语句</p>
+<p>不满足SSA</p>
+<p>  ![image-20230524163308498](LLVM pass学习&#x2F;image-20230524163308498.png)</p>
+<p>满足SSA</p>
+<p> ![image-20230524163343943](LLVM pass学习&#x2F;image-20230524163343943.png)</p>
+<h5 id="alloca"><a href="#alloca" class="headerlink" title="alloca"></a>alloca</h5><p>栈中分配空间</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt;=alloca &lt;type&gt; [,&lt;ty&gt; &lt;NumElements&gt;] [,align &lt;alignment&gt;] ;分配sizeof(type)*NumElements字节的内存,分配的地址与alignment对齐</span><br></pre></td></tr></table></figure>
+
+<h5 id="store"><a href="#store" class="headerlink" title="store"></a>store</h5><p>内存存储指令,向指针指向的内存中存储数据</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">store &lt;ty&gt; &lt;value&gt;,&lt;ty&gt;* &lt;pointer&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="load"><a href="#load" class="headerlink" title="load"></a>load</h5><p>内存读取</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = load&lt;ty&gt;,&lt;ty&gt;* &lt;pointer&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="类型转换相关"><a href="#类型转换相关" class="headerlink" title="类型转换相关"></a>类型转换相关</h4><h5 id="trunc-to"><a href="#trunc-to" class="headerlink" title="trunc .. to"></a>trunc .. to</h5><p>大类型向小类型转换</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt;= trunc &lt;ty&gt; &lt;value&gt; to &lt;ty2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="zext-to"><a href="#zext-to" class="headerlink" title="zext .. to"></a>zext .. to</h5><p>小类型转大类型(高位补0)</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt;= zext &lt;ty&gt; &lt;value&gt; to &lt;ty2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="sext-to"><a href="#sext-to" class="headerlink" title="sext .. to"></a>sext .. to</h5><p>复制符号位的转换</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt;= sext &lt;ty&gt; &lt;value&gt; to &lt;ty2&gt;</span><br></pre></td></tr></table></figure>
+
+<h4 id="其他指令"><a href="#其他指令" class="headerlink" title="其他指令"></a>其他指令</h4><h5 id="phi指令"><a href="#phi指令" class="headerlink" title="phi指令"></a>phi指令</h5><p>   ![image-20230524171500946](LLVM pass学习&#x2F;image-20230524171500946.png)</p>
+<p>以上流程,如果是从左侧基本快执行至最后,y的值为y1,从右侧则为y2.</p>
+<p>为了解决SSA引起的变量不明确问题,引入了Φ函数解决这个问题.也就是phi指令.</p>
+<p> ![image-20230524171925856](LLVM pass学习&#x2F;image-20230524171925856.png)</p>
+<p>phi指令的计算结果,由指令所在的基本块的前驱块确定的.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt;=phi &lt;ty&gt; [&lt;val0&gt;,&lt;label0&gt;],...;如果前驱块为label0,则result=val0</span><br></pre></td></tr></table></figure>
+
+<h5 id="select"><a href="#select" class="headerlink" title="select"></a>select</h5><p>三元运算符</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; = select il &lt;cond&gt;,&lt;ty&gt; &lt;val1&gt;,&lt;ty&gt; &lt;val2&gt;</span><br></pre></td></tr></table></figure>
+
+<h5 id="call"><a href="#call" class="headerlink" title="call"></a>call</h5><p>调用函数指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">&lt;result&gt; call &lt;ty&gt;|&lt;funty&gt; &lt;fnptrval&gt;(&lt;function args&gt;)</span><br></pre></td></tr></table></figure>
+
 
     </div>
 
@@ -317,7 +387,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LLVM-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86%E6%8A%80%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">LLVM 代码混淆技术</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GCC%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">GCC编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">LLVM编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-Pass"><span class="nav-number">1.3.</span> <span class="nav-text">LLVM Pass</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pass%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.3.1.</span> <span class="nav-text">Pass类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FuncitonPass"><span class="nav-number">1.3.2.</span> <span class="nav-text">FuncitonPass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-IR"><span class="nav-number">1.4.</span> <span class="nav-text">LLVM IR</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">1.4.1.</span> <span class="nav-text">LLVM IR的结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module-%E6%A8%A1%E5%9D%97"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">Module(模块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Funciton-%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">Funciton(函数)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Basic-Block-%E5%9F%BA%E6%9C%AC%E5%9D%97"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">Basic Block(基本块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Instruction-%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.1.4.</span> <span class="nav-text">Instruction(指令)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.</span> <span class="nav-text">LLVM IR的指令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ret%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.0.1.</span> <span class="nav-text">ret指令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#br%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.0.2.</span> <span class="nav-text">br指令</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LLVM-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86%E6%8A%80%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">LLVM 代码混淆技术</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GCC%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">GCC编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">LLVM编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-Pass"><span class="nav-number">1.3.</span> <span class="nav-text">LLVM Pass</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pass%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.3.1.</span> <span class="nav-text">Pass类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FuncitonPass"><span class="nav-number">1.3.2.</span> <span class="nav-text">FuncitonPass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-IR"><span class="nav-number">1.4.</span> <span class="nav-text">LLVM IR</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">1.4.1.</span> <span class="nav-text">LLVM IR的结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module-%E6%A8%A1%E5%9D%97"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">Module(模块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Funciton-%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">Funciton(函数)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Basic-Block-%E5%9F%BA%E6%9C%AC%E5%9D%97"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">Basic Block(基本块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Instruction-%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.1.4.</span> <span class="nav-text">Instruction(指令)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.</span> <span class="nav-text">LLVM IR的指令</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%BB%88%E7%BB%93%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.1.</span> <span class="nav-text">终结指令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ret"><span class="nav-number">1.4.2.1.1.</span> <span class="nav-text">ret</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#br"><span class="nav-number">1.4.2.1.2.</span> <span class="nav-text">br</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#icmp"><span class="nav-number">1.4.2.1.3.</span> <span class="nav-text">icmp</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#switch"><span class="nav-number">1.4.2.1.4.</span> <span class="nav-text">switch</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BA%8C%E5%85%83%E8%BF%90%E7%AE%97%E7%9B%B8%E5%85%B3"><span class="nav-number">1.4.2.2.</span> <span class="nav-text">二元运算相关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#add"><span class="nav-number">1.4.2.2.1.</span> <span class="nav-text">add</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#sub"><span class="nav-number">1.4.2.2.2.</span> <span class="nav-text">sub</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#mul"><span class="nav-number">1.4.2.2.3.</span> <span class="nav-text">mul</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#udiv-x2F-sdiv"><span class="nav-number">1.4.2.2.4.</span> <span class="nav-text">udiv&#x2F;sdiv</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#urem-x2F-srem"><span class="nav-number">1.4.2.2.5.</span> <span class="nav-text">urem&#x2F;srem</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%8C%89%E4%BD%8D%E4%BA%8C%E5%85%83%E8%BF%90%E7%AE%97%E7%9B%B8%E5%85%B3"><span class="nav-number">1.4.2.3.</span> <span class="nav-text">按位二元运算相关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#shl"><span class="nav-number">1.4.2.3.1.</span> <span class="nav-text">shl</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#lshr-x2F-ashr"><span class="nav-number">1.4.2.3.2.</span> <span class="nav-text">lshr&#x2F;ashr</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#and-x2F-or-x2F-xor"><span class="nav-number">1.4.2.3.3.</span> <span class="nav-text">and&#x2F;or&#x2F;xor</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%86%85%E5%AD%98%E8%AE%BF%E9%97%AE%E5%92%8C%E5%AF%BB%E5%9D%80"><span class="nav-number">1.4.2.4.</span> <span class="nav-text">内存访问和寻址</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%8D%95%E8%B5%8B%E5%80%BC"><span class="nav-number">1.4.2.4.1.</span> <span class="nav-text">静态单赋值</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#alloca"><span class="nav-number">1.4.2.4.2.</span> <span class="nav-text">alloca</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#store"><span class="nav-number">1.4.2.4.3.</span> <span class="nav-text">store</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#load"><span class="nav-number">1.4.2.4.4.</span> <span class="nav-text">load</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2%E7%9B%B8%E5%85%B3"><span class="nav-number">1.4.2.5.</span> <span class="nav-text">类型转换相关</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#trunc-to"><span class="nav-number">1.4.2.5.1.</span> <span class="nav-text">trunc .. to</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#zext-to"><span class="nav-number">1.4.2.5.2.</span> <span class="nav-text">zext .. to</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#sext-to"><span class="nav-number">1.4.2.5.3.</span> <span class="nav-text">sext .. to</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B6%E4%BB%96%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.6.</span> <span class="nav-text">其他指令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#phi%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.6.1.</span> <span class="nav-text">phi指令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#select"><span class="nav-number">1.4.2.6.2.</span> <span class="nav-text">select</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#call"><span class="nav-number">1.4.2.6.3.</span> <span class="nav-text">call</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
