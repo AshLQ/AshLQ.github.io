@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="LLVM 代码混淆技术LLVM是具有很多模块的编译框架,区别于GCC,是一个可拓展的,模块化的编译器. GCC编译流程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Ash blog">
+<meta property="og:url" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/index.html">
+<meta property="og:site_name" content="Ash blog">
+<meta property="og:description" content="LLVM 代码混淆技术LLVM是具有很多模块的编译框架,区别于GCC,是一个可拓展的,模块化的编译器. GCC编译流程">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522103826896.png">
+<meta property="og:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522104522517.png">
+<meta property="og:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522105303956.png">
+<meta property="article:published_time" content="2023-05-23T08:29:36.157Z">
+<meta property="article:modified_time" content="2023-05-24T07:18:43.721Z">
+<meta property="article:author" content="Ash">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522103826896.png">
+
+<link rel="canonical" href="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title> | Ash blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ash blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ash">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ash blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-05-23 16:29:36" itemprop="dateCreated datePublished" datetime="2023-05-23T16:29:36+08:00">2023-05-23</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-05-24 15:18:43" itemprop="dateModified" datetime="2023-05-24T15:18:43+08:00">2023-05-24</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="LLVM-代码混淆技术"><a href="#LLVM-代码混淆技术" class="headerlink" title="LLVM 代码混淆技术"></a>LLVM 代码混淆技术</h1><p>LLVM是具有很多模块的编译框架,区别于GCC,是一个可拓展的,模块化的编译器.</p>
+<h2 id="GCC编译流程"><a href="#GCC编译流程" class="headerlink" title="GCC编译流程"></a>GCC编译流程</h2><p>GCC模块分为前端,优化器,后端.</p>
+<p><img src="/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522103826896.png" alt="image-20230522103826896"></p>
+<h2 id="LLVM编译流程"><a href="#LLVM编译流程" class="headerlink" title="LLVM编译流程"></a>LLVM编译流程</h2><p>LLVM与之相同,LLVM的中间代码叫做LLVM IR.</p>
+<p><img src="/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522104522517.png" alt="image-20230522104522517"></p>
+<p>代码的混淆通过LLVM pass实现.LLVM pass框架是LLVM提供给用户用来干预优化过程的框架.</p>
+<p>编译后的LLVMPass通过优化器opt进行加载,对LLVM IR中间代码进行分析和修改,生成新的中间代码.</p>
+<p><img src="/2023/05/23/LLVM%20pass%E5%AD%A6%E4%B9%A0/image-20230522105303956.png" alt="image-20230522105303956"></p>
+<p><strong>LLVM的三种编译模式,最常用的应该是第二种,编译速度快而且方便管理.</strong></p>
+<p>1.与整个LLVM一起编译,Pass代码存放于llvm&#x2F;lib&#x2F;Transforms</p>
+<p>2.通过CMake对Pass进行单独编译.</p>
+<p>3.使用命令行对pass进行单独编译.</p>
+<h2 id="LLVM-Pass"><a href="#LLVM-Pass" class="headerlink" title="LLVM Pass"></a>LLVM Pass</h2><h3 id="Pass类型"><a href="#Pass类型" class="headerlink" title="Pass类型"></a>Pass类型</h3><p>ModulePass:基于模块的Pass</p>
+<p><strong>FunctionPass:基于函数的Pass</strong></p>
+<p>CallGraphPass:基于调用图的Pass</p>
+<p>LoopPass:基于循环的Pass</p>
+<p>….</p>
+<h3 id="FuncitonPass"><a href="#FuncitonPass" class="headerlink" title="FuncitonPass"></a>FuncitonPass</h3><p>以函数为单位进行处理</p>
+<p>Function的子类必须实现runOnFunciton(Funciton &amp;F)</p>
+<p>FunctionPass运行时,会对程序的每个函数执行一次runOnFunction()</p>
+<p>1.创建一个类,继承FunctionPass父类.</p>
+<p>2.子类实现runOnFunction(Function &amp;F)</p>
+<p>3.向LLVM注册Pass类</p>
+<h2 id="LLVM-IR"><a href="#LLVM-IR" class="headerlink" title="LLVM IR"></a>LLVM IR</h2><p>LLVM IR类似与汇编,是一种低级编程语言.任何高级编程语言都可以用LLVM IR表示,所以基于LLVM IR可以很方便的进行代码优化.</p>
+<p>LLVM IR文件中有两种表示方式.</p>
+<p>一种是可读的形式,后缀为<code>.ll</code>,一种为二进制的形式,后缀为<code>.bc</code>,二者是可以相互转换的.</p>
+<p>通过<code>llvm-dis</code>将<code>.bc</code>转换为<code>.ll</code></p>
+<p>通过<code>llvm-as</code>将<code>.ll</code>转换为<code>.bc</code></p>
+<h3 id="LLVM-IR的结构"><a href="#LLVM-IR的结构" class="headerlink" title="LLVM IR的结构"></a>LLVM IR的结构</h3><p>基于LLVM的混淆,通常以函数和比函数更小的基本单位进行混淆的.</p>
+<p>以函数为单位的混淆:控制流平坦化</p>
+<p>以基本块为单位的混淆:虚假控制流</p>
+<p>以指令为基本单位的混淆:指令替代</p>
+<h4 id="Module-模块"><a href="#Module-模块" class="headerlink" title="Module(模块)"></a>Module(模块)</h4><p>LLVM IR中,模块是最顶层的单位,一个个模块代表一个编译单元,通常对应一个源代码文件,包含例如函数定义,函数声明,全局变量等全局符号.</p>
+<h4 id="Funciton-函数"><a href="#Funciton-函数" class="headerlink" title="Funciton(函数)"></a>Funciton(函数)</h4><p>函数是LLVM IR中非常重要的单位,函数由函数头和函数体组成.函数头包括函数名,参数列表,返回数据类型.函数体由一系列指令构成的Basic Block(基本块)组成.</p>
+<h4 id="Basic-Block-基本块"><a href="#Basic-Block-基本块" class="headerlink" title="Basic Block(基本块)"></a>Basic Block(基本块)</h4><p>基本块是LLVM IR的基本执行单元,有若干个指令和标签组成,正常情况下基本块的最后一条指令为跳转指令或返回指令,也叫终结指令.</p>
+<p>还存在一些PHI指令.</p>
+<h4 id="Instruction-指令"><a href="#Instruction-指令" class="headerlink" title="Instruction(指令)"></a>Instruction(指令)</h4><p>LLVM中的最小执行大怒预案,表示一个操作或者一个控制流操作,由操作码和操作数组成.</p>
+<h3 id="LLVM-IR的指令"><a href="#LLVM-IR的指令" class="headerlink" title="LLVM IR的指令"></a>LLVM IR的指令</h3><p>其实与汇编类似.</p>
+<h5 id="ret指令"><a href="#ret指令" class="headerlink" title="ret指令"></a>ret指令</h5><p>返回指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">ret &lt;type&gt; &lt;value&gt;</span><br><span class="line">ret &#123;&#125; &#123;&#125;</span><br><span class="line">ret void</span><br></pre></td></tr></table></figure>
+
+<h5 id="br指令"><a href="#br指令" class="headerlink" title="br指令"></a>br指令</h5><p>跳转指令</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/05/01/afl-fuzz%E6%BA%90%E7%A0%81%E5%88%86%E6%9E%90/" rel="prev" title="afl-fuzz源码分析">
+      <i class="fa fa-chevron-left"></i> afl-fuzz源码分析
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#LLVM-%E4%BB%A3%E7%A0%81%E6%B7%B7%E6%B7%86%E6%8A%80%E6%9C%AF"><span class="nav-number">1.</span> <span class="nav-text">LLVM 代码混淆技术</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#GCC%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.1.</span> <span class="nav-text">GCC编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM%E7%BC%96%E8%AF%91%E6%B5%81%E7%A8%8B"><span class="nav-number">1.2.</span> <span class="nav-text">LLVM编译流程</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-Pass"><span class="nav-number">1.3.</span> <span class="nav-text">LLVM Pass</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Pass%E7%B1%BB%E5%9E%8B"><span class="nav-number">1.3.1.</span> <span class="nav-text">Pass类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#FuncitonPass"><span class="nav-number">1.3.2.</span> <span class="nav-text">FuncitonPass</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#LLVM-IR"><span class="nav-number">1.4.</span> <span class="nav-text">LLVM IR</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E7%BB%93%E6%9E%84"><span class="nav-number">1.4.1.</span> <span class="nav-text">LLVM IR的结构</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Module-%E6%A8%A1%E5%9D%97"><span class="nav-number">1.4.1.1.</span> <span class="nav-text">Module(模块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Funciton-%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.1.2.</span> <span class="nav-text">Funciton(函数)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Basic-Block-%E5%9F%BA%E6%9C%AC%E5%9D%97"><span class="nav-number">1.4.1.3.</span> <span class="nav-text">Basic Block(基本块)</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Instruction-%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.1.4.</span> <span class="nav-text">Instruction(指令)</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#LLVM-IR%E7%9A%84%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.</span> <span class="nav-text">LLVM IR的指令</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#ret%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.0.1.</span> <span class="nav-text">ret指令</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#br%E6%8C%87%E4%BB%A4"><span class="nav-number">1.4.2.0.2.</span> <span class="nav-text">br指令</span></a></li></ol></li></ol></li></ol></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ash</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ash</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
