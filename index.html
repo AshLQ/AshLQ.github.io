@@ -145,6 +145,72 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ash">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ash blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/" class="post-title-link" itemprop="url">hevd windows内核漏洞练习-ARBITRARY_WRITE</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-07-16 18:13:35 / 修改时间：19:06:38" itemprop="dateCreated datePublished" datetime="2023-07-16T18:13:35+08:00">2023-07-16</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="hevd-windows内核漏洞练习-ARBITRARY-WRITE"><a href="#hevd-windows内核漏洞练习-ARBITRARY-WRITE" class="headerlink" title="hevd windows内核漏洞练习-ARBITRARY_WRITE"></a>hevd windows内核漏洞练习-ARBITRARY_WRITE</h1><h2 id="1-漏洞分析"><a href="#1-漏洞分析" class="headerlink" title="1.漏洞分析"></a>1.漏洞分析</h2><p>这是一个任意内存写入漏洞.它这里并未对UserWriteWhatWhere-&gt;What,UserWriteWhatWhere-&gt;Where的地址进行检查,后面直接写入了,这里正常应该调用ProbeForRead进行检查,判断是否为用户地址空间的地址,并且是否可读写.</p>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-BUFFER_OVERFLOW_STACK/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -756,72 +822,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2022/12/27/v8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0_starctf2019%20oob/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ash">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ash blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2022/12/27/v8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0_starctf2019%20oob/" class="post-title-link" itemprop="url">v8漏洞练习笔记_starctf2019 oob</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-              
-
-              <time title="创建时间：2022-12-27 19:01:50 / 修改时间：19:07:56" itemprop="dateCreated datePublished" datetime="2022-12-27T19:01:50+08:00">2022-12-27</time>
-            </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="v8漏洞练习笔记-starctf2019-oob"><a href="#v8漏洞练习笔记-starctf2019-oob" class="headerlink" title="v8漏洞练习笔记_starctf2019 oob"></a>v8漏洞练习笔记_starctf2019 oob</h1><h5 id="v8内存结构"><a href="#v8内存结构" class="headerlink" title="v8内存结构"></a>v8内存结构</h5><p>v8变量内存结构,新版v8使用了指针压缩,基址存于R13寄存器,指针通过32为存储,最后一位表示tag,为1时会与R13中的基址进行运算 </p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2022/12/27/v8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0%E7%AC%94%E8%AE%B0_starctf2019%20oob/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -891,7 +891,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">12</span>
+          <span class="site-state-item-count">13</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
