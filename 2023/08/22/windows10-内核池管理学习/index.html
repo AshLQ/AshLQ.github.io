@@ -28,7 +28,7 @@
 <meta property="og:description" content="windows10 内核池管理学习笔记原文地址: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:locale" content="zh_CN">
 <meta property="article:published_time" content="2023-08-22T01:54:05.905Z">
-<meta property="article:modified_time" content="2023-08-22T02:16:36.991Z">
+<meta property="article:modified_time" content="2023-08-22T02:43:32.671Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 
@@ -174,7 +174,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-08-22 09:54:05 / 修改时间：10:16:36" itemprop="dateCreated datePublished" datetime="2023-08-22T09:54:05+08:00">2023-08-22</time>
+              <time title="创建时间：2023-08-22 09:54:05 / 修改时间：10:43:32" itemprop="dateCreated datePublished" datetime="2023-08-22T09:54:05+08:00">2023-08-22</time>
             </span>
 
           
@@ -190,8 +190,24 @@
       
         <h1 id="windows10-内核池管理学习笔记"><a href="#windows10-内核池管理学习笔记" class="headerlink" title="windows10 内核池管理学习笔记"></a>windows10 内核池管理学习笔记</h1><p>原文地址:</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf">https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf</a></p>
-<p>堆溢出漏洞是比较常见的一种漏洞类型,该类漏洞的利用需要深入了解windows堆的管理机制</p>
-<h2 id="1-关于内核池"><a href="#1-关于内核池" class="headerlink" title="1.关于内核池"></a>1.关于内核池</h2>
+<p>堆溢出漏洞是比较常见的一种漏洞类型,该类漏洞的利用需要深入了解windows堆的管理机制.才能更好的构造出堆的布局,进行稳定的利用.</p>
+<h2 id="1-关于内核池"><a href="#1-关于内核池" class="headerlink" title="1.关于内核池"></a>1.关于内核池</h2><p>在windows系统中,池是内核层的堆空间,池分配器与用户层的分配是不同的,在windows 10 19h1更新以后,一些用户态使用的分段堆技术已被引入内核.</p>
+<h3 id="1-池的内部结构"><a href="#1-池的内部结构" class="headerlink" title="1.池的内部结构"></a>1.池的内部结构</h3><p>在内核中,池的分配和释放主要是通过两个函数,分别是ExAllocatePoolWithTag和ExFreePoolWithTag</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> * <span class="title">ExAllocatePoolWithTag</span> <span class="params">( POOL_TYPE PoolType ,</span></span></span><br><span class="line"><span class="params"><span class="function">								<span class="type">size_t</span> NumberOfBytes ,</span></span></span><br><span class="line"><span class="params"><span class="function">								<span class="type">unsigned</span> <span class="type">int</span> Tag )</span></span>;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> <span class="title">ExFreePoolWithTag</span> <span class="params">( <span class="type">void</span> * P,</span></span></span><br><span class="line"><span class="params"><span class="function">                        <span class="type">unsigned</span> <span class="type">int</span> Tag )</span></span>;</span><br></pre></td></tr></table></figure>
+
+<p>其中ExAllocatePoolWithTag函数中的参数POOL_TYPE是一个位的字段,枚举值如下.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">typedef</span> <span class="keyword">enum</span> <span class="title class_">_POOL_TYPE</span> &#123;</span><br><span class="line">    NonPagedPool,</span><br><span class="line">    NonPagedPoolExecute = NonPagedPool,</span><br><span class="line">    PagedPool,</span><br><span class="line">    NonPagedPoolMustSucceed = NonPagedPool + <span class="number">2</span>,</span><br><span class="line">    DontUseThisType,</span><br><span class="line">    NonPagedPoolCacheAligned = NonPagedPool + <span class="number">4</span>,</span><br><span class="line">    PagedPoolCacheAligned,</span><br><span class="line">    NonPagedPoolCacheAlignedMustS = NonPagedPool + <span class="number">6</span>,</span><br><span class="line">    MaxPoolType,</span><br><span class="line">    NonPagedPoolBase = <span class="number">0</span>,</span><br><span class="line">    NonPagedPoolBaseMustSucceed = NonPagedPoolBase + <span class="number">2</span>,</span><br><span class="line">    NonPagedPoolBaseCacheAligned = NonPagedPoolBase + <span class="number">4</span>,</span><br><span class="line">    NonPagedPoolBaseCacheAlignedMustS = NonPagedPoolBase + <span class="number">6</span>,</span><br><span class="line">    NonPagedPoolSession = <span class="number">32</span>,</span><br><span class="line">    PagedPoolSession = NonPagedPoolSession + <span class="number">1</span>,</span><br><span class="line">    NonPagedPoolMustSucceedSession = PagedPoolSession + <span class="number">1</span>,</span><br><span class="line">    DontUseThisTypeSession = NonPagedPoolMustSucceedSession + <span class="number">1</span>,</span><br><span class="line">    NonPagedPoolCacheAlignedSession = DontUseThisTypeSession + <span class="number">1</span>,</span><br><span class="line">    PagedPoolCacheAlignedSession = NonPagedPoolCacheAlignedSession + <span class="number">1</span>,</span><br><span class="line">    NonPagedPoolCacheAlignedMustSSession = PagedPoolCacheAlignedSession + <span class="number">1</span>,</span><br><span class="line">    NonPagedPoolNx = <span class="number">512</span>,</span><br><span class="line">    NonPagedPoolNxCacheAligned = NonPagedPoolNx + <span class="number">4</span>,</span><br><span class="line">    NonPagedPoolSessionNx = NonPagedPoolNx + <span class="number">32</span>,</span><br><span class="line"></span><br><span class="line">&#125; POOL_TYPE;</span><br></pre></td></tr></table></figure>
+
+<p>PoolType可以存储以下信息:</p>
+<p>要申请的内存类型:NonPagedPool,PagedPool,SessionPool,NonPagedPoolNx</p>
+<p>指定必须分配成功,否则触发BugCheck</p>
+<p>指定与内存对齐&#x2F;必须对齐</p>
+<p>指定使用PoolQuota机制</p>
+<p>分页池和非分页池是常用的两种内存类型,根据IRQL中断优先级,是否会被页交换中断,具有不同的使用场景.</p>
+<p>在win8中引入了NonPagedPoolNx,必须使用它来替代NonpagedPool类型.</p>
+
     </div>
 
     
@@ -268,7 +284,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">windows10 内核池管理学习笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%B3%E4%BA%8E%E5%86%85%E6%A0%B8%E6%B1%A0"><span class="nav-number">1.1.</span> <span class="nav-text">1.关于内核池</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">windows10 内核池管理学习笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%85%B3%E4%BA%8E%E5%86%85%E6%A0%B8%E6%B1%A0"><span class="nav-number">1.1.</span> <span class="nav-text">1.关于内核池</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%B1%A0%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.池的内部结构</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
