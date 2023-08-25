@@ -27,6 +27,7 @@
 <meta property="og:site_name" content="Ash blog">
 <meta property="og:description" content="windows10 内核池管理学习笔记学习原文地址: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825100356292.png">
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230822151821128.png">
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230822153908744.png">
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230822154613197.png">
@@ -34,11 +35,16 @@
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230823100051759.png">
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230823100820974.png">
 <meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230823103408970.png">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230823173242627.png">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101023169.png">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101301562.png">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101801704.png">
+<meta property="og:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101906432.png">
 <meta property="article:published_time" content="2023-08-22T01:54:05.905Z">
-<meta property="article:modified_time" content="2023-08-23T03:24:22.310Z">
+<meta property="article:modified_time" content="2023-08-25T02:25:29.986Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230822151821128.png">
+<meta name="twitter:image" content="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825100356292.png">
 
 <link rel="canonical" href="http://example.com/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/">
 
@@ -188,7 +194,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-23 11:24:22" itemprop="dateModified" datetime="2023-08-23T11:24:22+08:00">2023-08-23</time>
+                <time title="修改时间：2023-08-25 10:25:29" itemprop="dateModified" datetime="2023-08-25T10:25:29+08:00">2023-08-25</time>
               </span>
 
           
@@ -206,6 +212,8 @@
 <p><a target="_blank" rel="noopener" href="https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf">https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf</a></p>
 <p>堆溢出漏洞是比较常见的一种漏洞类型,该类漏洞的利用需要深入了解windows堆的管理机制.</p>
 <p>在windows系统中,池是内核层的堆空间,池分配器与用户层的分配是不同的,在windows 10 19h1更新以后,一些用户态使用的分段堆技术已被引入内核.</p>
+<p>整体结构</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825100356292.png" alt="image-20230825100356292"></p>
 <h2 id="1-池的内部结构"><a href="#1-池的内部结构" class="headerlink" title="1.池的内部结构"></a>1.池的内部结构</h2><p>在内核中,池的分配和释放主要是通过两个函数,分别是ExAllocatePoolWithTag和ExFreePoolWithTag</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="type">void</span> * <span class="title">ExAllocatePoolWithTag</span> <span class="params">( POOL_TYPE PoolType ,</span></span></span><br><span class="line"><span class="params"><span class="function">								<span class="type">size_t</span> NumberOfBytes ,</span></span></span><br><span class="line"><span class="params"><span class="function">								<span class="type">unsigned</span> <span class="type">int</span> Tag )</span></span>;</span><br></pre></td></tr></table></figure>
 
@@ -328,7 +336,7 @@
 <p>为什么叫动态快表呢,因为每次请求分配时,对应的快表属性都会进行更新.</p>
 <p>Balance Set Mangager每扫描三次,动态快表都会重新平衡,每个快表的大小不能超过MaximumDepth,不能小于4.</p>
 <p>并且通过命中率对Depth进行动态调整.</p>
-<h2 id="3-POOL-HEADER"><a href="#3-POOL-HEADER" class="headerlink" title="3. POOL_HEADER"></a>3. POOL_HEADER</h2><p>在win10 19h1前,内核分配的池都以POOL_HEADER开头,并且所有的字段都被使用,然而在更新之后,POOL_HEADER大部分字段是无用的,但是已分配的小块内存仍在使用.</p>
+<h3 id="6-POOL-HEADER"><a href="#6-POOL-HEADER" class="headerlink" title="6. POOL_HEADER"></a>6. POOL_HEADER</h3><p>在win10 19h1前,内核分配的池都以POOL_HEADER开头,并且所有的字段都被使用,然而在更新之后,POOL_HEADER大部分字段是无用的,但是已分配的小块内存仍在使用.</p>
 <figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">POOL_HEADER</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">char</span> PreviousSize;</span><br><span class="line">    <span class="type">char</span> PoolIndex;</span><br><span class="line">    <span class="type">char</span> BlockSize;</span><br><span class="line">    <span class="type">char</span> PoolType;</span><br><span class="line">    <span class="type">int</span> PoolTag;</span><br><span class="line">    Ptr64 ProcessBilled;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
 
 <p>内核堆分配器设置的字段如下</p>
@@ -339,7 +347,31 @@
 
 
 
-<h3 id="缓存对齐"><a href="#缓存对齐" class="headerlink" title="缓存对齐"></a>缓存对齐</h3><p>调用了ExAllocatePoolWithTag时,如果PoolType设置了CacheAligned,那么返回的内存将是与缓存行大小对齐的,这个值取决于cpu,通常为0x40.</p>
+<h3 id="7-缓存对齐"><a href="#7-缓存对齐" class="headerlink" title="7.缓存对齐"></a>7.缓存对齐</h3><p>调用了ExAllocatePoolWithTag时,如果PoolType设置了CacheAligned,那么返回的内存将是与缓存行大小对齐的,这个值取决于cpu,通常为0x40.</p>
+<p>首先分配器,会增加ExpCacheLineSize的大小</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( PoolType &amp; <span class="number">4</span> )</span><br><span class="line">&#123;</span><br><span class="line">	request_alloc_size += ExpCacheLineSize ;</span><br><span class="line">	<span class="keyword">if</span> ( request_alloc_size &gt; <span class="number">0xFE0</span> )</span><br><span class="line">	&#123;</span><br><span class="line">		request_alloc_size -= ExpCacheLineSize ;</span><br><span class="line">		PoolType = PoolType &amp; <span class="number">0xFB</span>;</span><br><span class="line">	&#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>如果新的分配大小,不能容纳在单个页面中,那么CacheAligned将会被忽略,</p>
+<p>这种情况下,分配的块必须遵循以下三个条件:</p>
+<p>1.最终分配的地址必须与ExpCacheLineSize对齐</p>
+<p>2.数据块的开头必须有一个POOL_HEADER</p>
+<p>3.分配的地址-sizeof(POOL_HEADER)的地址处必须有一个POOL_HEADER</p>
+<p>如果分配的地址没有正确的对齐,那么块就可能会有2个Headers.</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230823173242627.png" alt="image-20230823173242627"></p>
+<p>第一个POOL_HEADER正常位与数据块的开头,第二个POOL_HEADER将按照ExpCacheLineSize-Sizeof(POOL_HEADER)对齐,是最终分配地址按照ExpCacheLineSize对齐.第一个POOL_HEADER中的CacheAligned将被移除,第二个POOL_HEADER将进行如下填充.</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PreviousSize：用来保存两个header之间的偏移</span><br><span class="line">PoolIndex：未使用</span><br><span class="line">BlockSize：在第一个POOL_HEADER中申请的bucket的大小。</span><br><span class="line">PoolType：和往常一样一样，但是设置了CacheAligned</span><br><span class="line">PoolTag：和往常一样，两个POOL_HEADER是相同的</span><br><span class="line">ProcessBilled：未使用</span><br></pre></td></tr></table></figure>
+
+<h3 id="8-概述"><a href="#8-概述" class="headerlink" title="8.概述"></a>8.概述</h3><p>自从win19h1引入段堆之后,POOL_HEADER中的一些信息就已经不需要了,但是其他字段如PoolType,PoolTag和使用PoolQuota机制的情况下是仍然会使用的.</p>
+<p>这就是为什么分配小于0xFE0块都会至少还有一个POOL_HEADER头,下图标识LFH后端分配的一个数据块,前面只有一个POOL_HEADER头.分配的地址是POOL_HEADER后面的地址.</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101023169.png" alt="image-20230825101023169"></p>
+<p>不同的后端所申请的内存块的header结构是不同的,如果使用VS后端分配了大小为0x280的内存,那么这快内存将以VS_HEADER作为头部后面则是POOL_HEADER</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101301562.png" alt="image-20230825101301562"></p>
+<p>如果分配要涉及到CacheAligned的对齐,那么分配的内存可能会包含2个POOL_HEADER,第二个POOL_HEADER的CacheAligned位将会被设置,用于检索第一个块和实际分配的地址.下图是一个LFH后端申请的数据块,并且要求与设置的缓存大小对齐,所以前面有2个POOL_HEADER</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101801704.png" alt="image-20230825101801704"></p>
+<p>下图是一个分配时的决策流程</p>
+<p><img src="/2023/08/22/windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0/image-20230825101906432.png" alt="image-20230825101906432"></p>
+<p>从利用的角度上来看,可以得出2个结论,再19h1以后,POOL_HAEDER的大部分字段未被使用,所以利用时很多字段可以直接覆盖.第二是因为POOL_HADER多了很多新的用法,可以寻找新的利用技术.</p>
+<h2 id="3-攻击POOL-HADER"><a href="#3-攻击POOL-HADER" class="headerlink" title="3.攻击POOL_HADER"></a>3.攻击POOL_HADER</h2><p>如果堆溢出漏洞可以很好地控制写入的数据和大小,那么最简单的解决方案就是通过覆盖重写POOL_HADER,然后攻击下一个块的数据,唯一要做的事情就是覆盖时确认没有设置PoolQutota位,避免在释放时对ProcessBilled字段进行检查.</p>
 
     </div>
 
@@ -417,7 +449,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">windows10 内核池管理学习笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B1%A0%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">1.池的内部结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BB%8Ewin7%E5%BC%80%E5%A7%8B%E7%9A%84%E6%94%BB%E5%87%BB%E4%B8%8E%E7%BC%93%E8%A7%A3%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.1.</span> <span class="nav-text">2.从win7开始的攻击与缓解措施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NonPagedPoolNx"><span class="nav-number">1.1.2.</span> <span class="nav-text">NonPagedPoolNx</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B8%A6%E6%9C%89%E6%AE%B5%E5%A0%86%E7%9A%84%E6%B1%A0%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">2.带有段堆的池分配器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%AE%B5%E5%A0%86%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.段堆内部结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%AE%B5%E5%90%8E%E7%AB%AF"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.段后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%AF%E5%8F%98%E5%A4%A7%E5%B0%8F%E5%90%8E%E7%AB%AF-VS"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.可变大小后端(VS)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86%E5%90%8E%E7%AB%AF-LFH"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.低碎片堆后端(LFH)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8A%A8%E6%80%81%E5%BF%AB%E8%A1%A8-Dynamic-Lookaside"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.动态快表(Dynamic Lookaside)</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-POOL-HEADER"><span class="nav-number">1.3.</span> <span class="nav-text">3. POOL_HEADER</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%93%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-number">1.3.1.</span> <span class="nav-text">缓存对齐</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows10-%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">windows10 内核池管理学习笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B1%A0%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">1.池的内部结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BB%8Ewin7%E5%BC%80%E5%A7%8B%E7%9A%84%E6%94%BB%E5%87%BB%E4%B8%8E%E7%BC%93%E8%A7%A3%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.1.</span> <span class="nav-text">2.从win7开始的攻击与缓解措施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NonPagedPoolNx"><span class="nav-number">1.1.2.</span> <span class="nav-text">NonPagedPoolNx</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B8%A6%E6%9C%89%E6%AE%B5%E5%A0%86%E7%9A%84%E6%B1%A0%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">2.带有段堆的池分配器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%AE%B5%E5%A0%86%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.段堆内部结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%AE%B5%E5%90%8E%E7%AB%AF"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.段后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%AF%E5%8F%98%E5%A4%A7%E5%B0%8F%E5%90%8E%E7%AB%AF-VS"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.可变大小后端(VS)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86%E5%90%8E%E7%AB%AF-LFH"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.低碎片堆后端(LFH)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8A%A8%E6%80%81%E5%BF%AB%E8%A1%A8-Dynamic-Lookaside"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.动态快表(Dynamic Lookaside)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-POOL-HEADER"><span class="nav-number">1.2.6.</span> <span class="nav-text">6. POOL_HEADER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E7%BC%93%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-number">1.2.7.</span> <span class="nav-text">7.缓存对齐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.2.8.</span> <span class="nav-text">8.概述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%94%BB%E5%87%BBPOOL-HADER"><span class="nav-number">1.3.</span> <span class="nav-text">3.攻击POOL_HADER</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
