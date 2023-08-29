@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Windows10内核池管理机制与利用方法翻译自这篇地址,加了点自己的理解: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
+  <meta name="description" content="Windows10内核池管理机制与利用方法翻译自这篇文章,加了点自己的理解. https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Windows10内核池管理机制与利用方法">
 <meta property="og:url" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="Ash blog">
-<meta property="og:description" content="Windows10内核池管理机制与利用方法翻译自这篇地址,加了点自己的理解: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
+<meta property="og:description" content="Windows10内核池管理机制与利用方法翻译自这篇文章,加了点自己的理解. https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825100356292.png">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230822151821128.png">
@@ -49,7 +49,7 @@
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828153640981.png">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230829104337823.png">
 <meta property="article:published_time" content="2023-08-22T01:54:05.905Z">
-<meta property="article:modified_time" content="2023-08-29T02:57:39.122Z">
+<meta property="article:modified_time" content="2023-08-29T09:13:34.849Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825100356292.png">
@@ -202,7 +202,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-29 10:57:39" itemprop="dateModified" datetime="2023-08-29T10:57:39+08:00">2023-08-29</time>
+                <time title="修改时间：2023-08-29 17:13:34" itemprop="dateModified" datetime="2023-08-29T17:13:34+08:00">2023-08-29</time>
               </span>
 
           
@@ -216,7 +216,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Windows10内核池管理机制与利用方法"><a href="#Windows10内核池管理机制与利用方法" class="headerlink" title="Windows10内核池管理机制与利用方法"></a>Windows10内核池管理机制与利用方法</h1><p>翻译自这篇地址,加了点自己的理解:</p>
+        <h1 id="Windows10内核池管理机制与利用方法"><a href="#Windows10内核池管理机制与利用方法" class="headerlink" title="Windows10内核池管理机制与利用方法"></a>Windows10内核池管理机制与利用方法</h1><p>翻译自这篇文章,加了点自己的理解.</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf">https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf</a></p>
 <p>堆溢出漏洞是比较常见的一种漏洞类型,该类漏洞的利用需要深入了解windows堆的管理机制.</p>
 <p>在windows系统中,池是内核层的堆空间,池分配器与用户层的分配是不同的,在windows 10 19h1更新以后,一些用户态使用的分段堆技术已被引入内核.</p>

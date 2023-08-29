@@ -31,8 +31,10 @@
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154333834.png">
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154531249.png">
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829162517610.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170857391.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170945425.png">
 <meta property="article:published_time" content="2023-08-29T06:35:40.058Z">
-<meta property="article:modified_time" content="2023-08-29T08:31:02.515Z">
+<meta property="article:modified_time" content="2023-08-29T09:39:33.768Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829145300483.png">
@@ -179,7 +181,7 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-08-29 14:35:40 / 修改时间：16:31:02" itemprop="dateCreated datePublished" datetime="2023-08-29T14:35:40+08:00">2023-08-29</time>
+              <time title="创建时间：2023-08-29 14:35:40 / 修改时间：17:39:33" itemprop="dateCreated datePublished" datetime="2023-08-29T14:35:40+08:00">2023-08-29</time>
             </span>
 
           
@@ -200,15 +202,27 @@
 <p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829145300483.png" alt="image-20230829145300483"></p>
 <p>在调用之前,调用目标的地址esi,会被传递到_guard_check_icall函数中,这也是CFG防护执行的位置,这个函数指向ntdll!LdrpValidateUserCallTarget函数.</p>
 <p>在LdrpValidateUserCallTarget函数中,会首先获取一个位图CFGBitmap,这个位图表示进程空间中所有函数的起始位置,进程空间中每8个字节的状态对应CFGBitmap的一个位.如果8个字节中有一个函数起始的地址,则CFGBitmap中的相应位会被置1.</p>
-<p>所以它是用这个CFGBitmap进行调用地址的验证的,如果对应的值位1,那么表示调用的目标地址是有效的,如果为0那么就是无效的,不会做调用.</p>
+<p>所以它是用这个CFGBitmap进行调用地址的验证的,如果对应的值位1,那么表示调用的目标地址是有效的,如果为0那么就是无效的.有效不做处理,无效调用LdrpHandleInvalidUserCallTarget.</p>
 <p>这其中涉及到了将调用地址转换为CFGBitmap中某一位的过程,最高的3个字节是CFGBitmap中的偏移量.最后的1个字节中的4-8位,如果目标地址未与0x10对齐,也就是0xf&amp;目标地址!&#x3D;0,那么4-8位的值|1就是位偏移值.</p>
 <p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154333834.png" alt="image-20230829154333834"></p>
 <p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154531249.png" alt="image-20230829154531249"></p>
-<h2 id="2-内部实现"><a href="#2-内部实现" class="headerlink" title="2.内部实现"></a>2.内部实现</h2><p>在PE文件的LoadConfigTable中可以看到关于CFG的一些信息</p>
+<h2 id="2-基本原理"><a href="#2-基本原理" class="headerlink" title="2.基本原理"></a>2.基本原理</h2><p>在PE文件的LoadConfigTable中可以看到关于CFG的一些信息</p>
 <p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829162517610.png" alt="image-20230829162517610"></p>
 <p>Guard CF function table:指向了函数RVA列表的指针,其中每个RVA被转换为CFGBitmap中的1,CFGBitmap中的位信息,都是来源于这张表.</p>
 <p>Guard CF Function count:表示RVA列表中记录的数量</p>
 <p>Guard Flags:CF instrumented表示该程序已经启用CFG</p>
+<p>在操作系统启动阶段,会通过执行MilnitializeCfg对CFG位图的共享内存进行创建.</p>
+<p>它首先会查询注册表项SYSTEM\CurrentControlSet\Control\Session\Manager\kernel中MitigationOptions并设置全局变量MmEnableCfg,控制系统是否开启CFG功能.</p>
+<p>然后创建共享内存MiCfgBitMapSection,这个共享内存是根据用户模式空间大小计算得出的,这意味着CFG位图可以表示整个用户空间.MiCfgBitMapSection包含了CFGBitmap.</p>
+<p>后面内核会对加载到系统的PE文件,进行读取和计算的操作,写入CFGBitmap.</p>
+<p>在初始化和处理完成后,CFGBitmap的地址需要映射到用户层进行使用,内核会调用PspPrepareSystemDllInitBlock函数,将CFGBitmap映射地址和长度写入到全局变量的字段中,全局变量的数据结构就是PsSystemDllInitBlock结构.它是一个固定地址,可以从用户模式和内核模式中访问.</p>
+<p>在用户模式下,可以获取PspSystemDllInitBlock全局变量中的CFGBitmap字段硬编码.</p>
+<p>最后在调用LdrpCfgProcessLoadConfig中将_guard_check_icall指向ntdll.dll!LdrpValidateUserCallTarget.</p>
+<p>如果检查到地址无效,会调用函数LdrpHandleInvalidUserCallTarget,该函数主要作用检查dep,执行0x29中断,对应的中断处理函数是KiRaiseSecurityCheckFailure,作用是停止进程.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170857391.png" alt="image-20230829170857391"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170945425.png" alt="image-20230829170945425"></p>
+<h2 id="3-CFG-Bypass"><a href="#3-CFG-Bypass" class="headerlink" title="3.CFG Bypass"></a>3.CFG Bypass</h2><p>影响判断结果的最直接方法是修改CFGBitmap,但是从上面分析的结果来看,CFGBitmap是内核映射过来的只读内存,无法修改.</p>
+<p>对于Bypass CFG的方法,微软在迭代中通过一些方法进行了缓解,下面简单介绍下.</p>
 
     </div>
 
@@ -286,7 +300,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制与绕过-CFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%86%85%E9%83%A8%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.2.</span> <span class="nav-text">2.内部实现</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制与绕过-CFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">2.基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-CFG-Bypass"><span class="nav-number">1.3.</span> <span class="nav-text">3.CFG Bypass</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
