@@ -20,12 +20,12 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="Windows10内核池管理机制与利用方法原文地址: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
+  <meta name="description" content="Windows10内核池管理机制与利用方法翻译自这篇地址,加了点自己的理解: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Windows10内核池管理机制与利用方法">
 <meta property="og:url" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/index.html">
 <meta property="og:site_name" content="Ash blog">
-<meta property="og:description" content="Windows10内核池管理机制与利用方法原文地址: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
+<meta property="og:description" content="Windows10内核池管理机制与利用方法翻译自这篇地址,加了点自己的理解: https:&#x2F;&#x2F;github.com&#x2F;synacktiv&#x2F;Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion&#x2F;blob&#x2F;master&#x2F;Scoop_The_Windows_10_pool.pdf">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825100356292.png">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230822151821128.png">
@@ -40,8 +40,16 @@
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825101301562.png">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825101801704.png">
 <meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825101906432.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825144927676.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825153137988.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828145407588.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828151546439.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828152945452.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828153350087.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828153640981.png">
+<meta property="og:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230829104337823.png">
 <meta property="article:published_time" content="2023-08-22T01:54:05.905Z">
-<meta property="article:modified_time" content="2023-08-25T06:28:06.658Z">
+<meta property="article:modified_time" content="2023-08-29T02:57:39.122Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825100356292.png">
@@ -194,7 +202,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-25 14:28:06" itemprop="dateModified" datetime="2023-08-25T14:28:06+08:00">2023-08-25</time>
+                <time title="修改时间：2023-08-29 10:57:39" itemprop="dateModified" datetime="2023-08-29T10:57:39+08:00">2023-08-29</time>
               </span>
 
           
@@ -208,7 +216,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="Windows10内核池管理机制与利用方法"><a href="#Windows10内核池管理机制与利用方法" class="headerlink" title="Windows10内核池管理机制与利用方法"></a>Windows10内核池管理机制与利用方法</h1><p>原文地址:</p>
+        <h1 id="Windows10内核池管理机制与利用方法"><a href="#Windows10内核池管理机制与利用方法" class="headerlink" title="Windows10内核池管理机制与利用方法"></a>Windows10内核池管理机制与利用方法</h1><p>翻译自这篇地址,加了点自己的理解:</p>
 <p><a target="_blank" rel="noopener" href="https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf">https://github.com/synacktiv/Windows-kernel-SegmentHeap-Aligned-Chunk-Confusion/blob/master/Scoop_The_Windows_10_pool.pdf</a></p>
 <p>堆溢出漏洞是比较常见的一种漏洞类型,该类漏洞的利用需要深入了解windows堆的管理机制.</p>
 <p>在windows系统中,池是内核层的堆空间,池分配器与用户层的分配是不同的,在windows 10 19h1更新以后,一些用户态使用的分段堆技术已被引入内核.</p>
@@ -238,7 +246,7 @@
 
 
 
-<h3 id="2-从win7开始的攻击与缓解措施"><a href="#2-从win7开始的攻击与缓解措施" class="headerlink" title="2.从win7开始的攻击与缓解措施"></a>2.从win7开始的攻击与缓解措施</h3><p>Tarjei Mandt及其论文《Windows 7上的内核池攻击》是针对内核池攻击的参考文献。介绍了池的内部结构和攻击,其中的一些攻击以POOL_HEAER为目标.</p>
+<h3 id="2-从win7开始的攻击与缓解措施"><a href="#2-从win7开始的攻击与缓解措施" class="headerlink" title="2.从win7开始的攻击与缓解措施"></a>2.从win7开始的攻击与缓解措施</h3><p>Tarjei Mandt及其论文《Windows 7上的内核池攻击》是针对内核池攻击的参考文献.介绍了池的内部结构和攻击,其中的一些攻击以POOL_HEAER为目标.</p>
 <p><strong>Quota Process Pointer Overwrite</strong> (配额进程指针覆盖攻击)</p>
 <p>在这篇文章中提到,因为可以为分配的池内存中对进程进行记录,池分配必须为池算法提供足够的信息.</p>
 <p>所以ExAllocatePoolWithQuotaTag将通过POOL_HEADER的ProcessBilled字段指向一个_KPROCESS指针.</p>
@@ -288,7 +296,7 @@
 <p>每一个_HEAP_PAGE_SEGMENT中都有一个签名,计算方式如下</p>
 <figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">Signature = Segment ^ SegContext ^ RtlpHpHeapGlobals ^ 0xA2E64EADA2E64EAD ;</span><br></pre></td></tr></table></figure>
 
-<p>此签名用于从任何已分配的内存块中寻找_HEAP_SEG_CONTEXT和相应的_SEGMENT_HEAP。</p>
+<p>此签名用于从任何已分配的内存块中寻找_HEAP_SEG_CONTEXT和相应的_SEGMENT_HEAP.</p>
 <h3 id="3-可变大小后端-VS"><a href="#3-可变大小后端-VS" class="headerlink" title="3.可变大小后端(VS)"></a>3.可变大小后端(VS)</h3><p>vs可变大小后端,用于分配512b-128kb大小的块,用于对空闲块的重用.</p>
 <p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230823093532190.png" alt="image-20230823093532190"></p>
 <p>这是vs后端的上下文结构:_HEAP_VS_CONTEXT</p>
@@ -359,7 +367,7 @@
 <p>如果分配的地址没有正确的对齐,那么块就可能会有2个Headers.</p>
 <p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230823173242627.png" alt="image-20230823173242627"></p>
 <p>第一个POOL_HEADER正常位与数据块的开头,第二个POOL_HEADER将按照ExpCacheLineSize-Sizeof(POOL_HEADER)对齐,是最终分配地址按照ExpCacheLineSize对齐.第一个POOL_HEADER中的CacheAligned将被移除,第二个POOL_HEADER将进行如下填充.</p>
-<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PreviousSize：用来保存两个header之间的偏移</span><br><span class="line">PoolIndex：未使用</span><br><span class="line">BlockSize：在第一个POOL_HEADER中申请的bucket的大小。</span><br><span class="line">PoolType：和往常一样一样，但是设置了CacheAligned</span><br><span class="line">PoolTag：和往常一样，两个POOL_HEADER是相同的</span><br><span class="line">ProcessBilled：未使用</span><br></pre></td></tr></table></figure>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">PreviousSize：用来保存两个header之间的偏移</span><br><span class="line">PoolIndex：未使用</span><br><span class="line">BlockSize：在第一个POOL_HEADER中申请的bucket的大小.</span><br><span class="line">PoolType：和往常一样一样,但是设置了CacheAligned</span><br><span class="line">PoolTag：和往常一样,两个POOL_HEADER是相同的</span><br><span class="line">ProcessBilled：未使用</span><br></pre></td></tr></table></figure>
 
 <p>如果,对齐填充中有足够的空间,还可以在POOL_HEADER之后在存储一个指针,称之为AlignedPoolHeader.它指向第二个POOL_HEADER</p>
 <h3 id="8-概述"><a href="#8-概述" class="headerlink" title="8.概述"></a>8.概述</h3><p>自从win19h1引入段堆之后,POOL_HEADER中的一些信息就已经不需要了,但是其他字段如PoolType,PoolTag和使用PoolQuota机制的情况下是仍然会使用的.</p>
@@ -389,16 +397,117 @@
 <p>1.分配器检查原始块是否在PoolType中设置了MustSucceed位.</p>
 <p>2.使用ExpCacheLineSize重新计算了2个头之间的偏移量,验证两个头之间的偏移量</p>
 <p>3.分配器检查已对齐标头的BlockSize是否等于原始标头的BlockSize+已对齐标头的PreviousSize</p>
-<p>4.分配器检查OriginalHeader中保存的指针加上POOL_HEADER的大小是否等于对齐头的地址与ExpPoolQuotaCookie xor的值。</p>
+<p>4.分配器检查OriginalHeader中保存的指针加上POOL_HEADER的大小是否等于对齐头的地址与ExpPoolQuotaCookie xor的值.</p>
 <p>在win10 19h1后,池分配器使用了段堆,这些检查都不存在了,但是xor的指针仍然存储在原始头之后,但是在释放的时候不会进行检查,作者认为有一些检查被错误的删除,某些检查可能会在未来的版本中重新启用,但是在win10 20h1的预编译的版本中并未显示此类补丁.</p>
-<p>目前，由于缺乏检查，攻击者可以利用 PoolType 作为攻击向量。攻击者可能会利用堆溢出设置下一个数据块的 PoolType 的CacheAligned 位，并完全控制 PreviousSize 字段。当分块被释放时，释放机制会使用受控的 PreviousSize 来查找原始分块，并将其释放。由于 PreviousSize 字段存储在一个字节上，攻击者可以释放任何与 0x10 对齐的地址，最高可达原始块地址之前的 0xFF * 0x10 &#x3D;0xFF0。</p>
+<p>目前,由于缺乏检查,攻击者可以利用 PoolType 作为攻击向量.攻击者可能会利用堆溢出设置下一个数据块的 PoolType 的CacheAligned 位,并完全控制 PreviousSize 字段.当分块被释放时,释放机制会使用受控的 PreviousSize 来查找原始分块,并将其释放.由于 PreviousSize 字段存储在一个字节上,攻击者可以释放任何与 0x10 对齐的地址,最高可达原始块地址之前的 0xFF * 0x10 &#x3D;0xFF0.</p>
 <p>本文的最后一部分介绍了一种通用漏洞利用的技术,他介绍了池溢出或UAF情况下值得被控制的通用对象,以及使用受控数据重用自由分配的多种对象和技术.</p>
 <h2 id="4-通用漏洞利用开发"><a href="#4-通用漏洞利用开发" class="headerlink" title="4.通用漏洞利用开发"></a>4.通用漏洞利用开发</h2><h3 id="1-必要条件"><a href="#1-必要条件" class="headerlink" title="1.必要条件"></a>1.必要条件</h3><p>本节介绍的漏洞利用实现了windows权限提升技术,假设攻击者处于低完整性级别.</p>
 <p>最终目的是开发出最通用的漏洞利用程序,可用于不同类型的内存(PagedPool和NonPagedPoolNx),不同大小的块以及任意堆溢出漏洞,这些漏洞需要满足以下条件.</p>
 <p>1.当以BlockSize为攻击目标时,漏洞需要提供一个受控值重写下一个分块的POOL_HEADER的第3个字节.</p>
 <p>2.当以PoolType攻击目标时,漏洞需要提供受控值,重写下一个分块的POOL_HEADER的第1和第4个字节.</p>
 <p>在所有情况下,都需要控制漏洞对象的分配和释放,以便提高堆喷的成功率.</p>
-<h3 id="2-利用策略"><a href="#2-利用策略" class="headerlink" title="2.利用策略"></a>2.利用策略</h3><p>所选择的利用策略是利用</p>
+<h3 id="2-利用策略"><a href="#2-利用策略" class="headerlink" title="2.利用策略"></a>2.利用策略</h3><p>所选择的利用策略是利用攻击下一个数据块的POOL_HEADER的PoolType和PreviousSize的能力.触发漏洞的块被称为Vulnerable chunk,被覆盖的块称为Overwritten chunk.</p>
+<p>如前面所讲,通过控制下一个分块的POOL_HEADER的PoolType和PreviousSize字段,攻击者可以改变被覆盖块的释放位置.利用这种方式有多种途径.</p>
+<p>如下图,当攻击者将PreviousSize字段设置为计算后恰好等于Vulnerable Chunk的位置,在释放Overwritten chunk时,Vulnerable Chunk将会被释放.并且处于UAF的状态.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825144927676.png" alt="image-20230825144927676"></p>
+<p>不过我们选择了另外一种技术,如下图,这种方法可以在Vulnerable Chunk中间触发Overwritten Chunk的释放.</p>
+<p>可以在Vulnerable Chunk中伪造一个POOL_HEADER,并且使用PoolType攻击来重定向Vulnerable Chunk的空闲空间,这将在合法的块中创建了一个虚假的块,从而达到一个很好的溢出效果.通过这种方式构造出的大块被称为ghost chunk.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230825153137988.png" alt="image-20230825153137988"></p>
+<p>ghost chunk至少覆盖2个块,即Vulnerable chunk和Overwritten chunk.</p>
+<p>这种方法看起来比UAF更好利用,因为它可以让攻击者更好的控制任意对象的内容.</p>
+<p>然后,攻击者就可以用任意数据控制的对象重新分配有漏洞的数据块,这样攻击者就可以控制部分ghost chunk中分配的对象.</p>
+<p>必须找到一个有趣的对象,才能将其放入幽灵块,为了尽可能实现最通用的利用,该对象应该满足以下要求:</p>
+<p>1.在完全或者部分控制的情况下,可以实现任意地址读写原语</p>
+<p>2.拥有控制这个对象分配和释放的能力</p>
+<p>3.具有最小0x210的可变大小,以便从相应的快表分配到ghost chunk中,但应尽可能小(避免分配时浪费太多堆空间)</p>
+<p>为了vulnerable chunk可以放在PagePool和NonPagedPoolNx中,因此需要2个这样的类对象,一个在PagedPool中分配,一个在NonPagedPoolNx中分配.</p>
+<p>但是这种对象不是常见的,作者也没有找到这种完美的对象,所以开发了一种利用策略.使用一个只能提供任意地址读原语的对象.攻击者仍然能控制ghost chunk的POOL_HEADER,这意味着之前提到的Quota Pointer Process Overwrite攻击可以被用于获取任意减量原语,ExpPoolQuotaCookie和ghost chunk的地址可以使用任意读取原语恢复.</p>
+<p>开发的漏洞利用使用的就是这个技术,通过利用堆处理和有趣的对象溢出,实现4字节的受控溢出变成权限提升,有低完整性级别提升到system.</p>
+<h3 id="3-目标对象"><a href="#3-目标对象" class="headerlink" title="3.目标对象"></a>3.目标对象</h3><p>在分页池创建管道后,用户可以向管道添加属性,属性是键值对,存储在一个链表中.PipeAttribute对象在分页池中分配,内核中的结构如下</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">PipeAttribute</span> &#123;</span><br><span class="line">    LIST_ENTRY list;</span><br><span class="line">    <span class="type">char</span> * AttributeName;</span><br><span class="line">    <span class="type">uint64_t</span> AttributeValueSize ;</span><br><span class="line">    <span class="type">char</span> * AttributeValue ;</span><br><span class="line">    <span class="type">char</span> data [<span class="number">0</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>PipeAttrubute对象的分配和数据的大小完全由攻击者控制,AttributeName和AttributeValue 是指向数据字段不同偏移量的指针.</p>
+<p>可以使用NtFsControlFile系统调用和0x11003C控制代码在管道上创建管道属性.</p>
+<p>然后可以使用 0x110038 控制代码读取属性值.AttributeValue指针和 AttributeValueSize 将用于读取属性值并返回给用户.属性值可以更改,但这将会触发先前 PipeAttribute 的释放和新属性的分配.</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">HANDLE read_pipe;</span><br><span class="line">HANDLE write_pipe;</span><br><span class="line"><span class="type">char</span> attribute [] = <span class="string">&quot;attribute_name \00 attribute_value&quot;</span></span><br><span class="line"><span class="type">char</span> output [<span class="number">0</span> x100 ];</span><br><span class="line">CreatePipe(read_pipe , write_pipe , <span class="literal">NULL</span> , bufsize);</span><br><span class="line">NtFsControlFile (write_pipe ,</span><br><span class="line">				<span class="literal">NULL</span> ,</span><br><span class="line">				<span class="literal">NULL</span> ,</span><br><span class="line">				<span class="literal">NULL</span> ,</span><br><span class="line">				&amp;status ,</span><br><span class="line">				<span class="number">0x11003C</span> ,</span><br><span class="line">				attribute ,</span><br><span class="line">				<span class="keyword">sizeof</span>(attribute),</span><br><span class="line">				output ,</span><br><span class="line">				<span class="keyword">sizeof</span>(output));</span><br></pre></td></tr></table></figure>
+
+<p>这 意 味 着 , 如 果 攻 击 者 可 以 控 制 PipeAttribute 的AttributeValue 和 AttributeValueSize 字段,就可以读取内核中的任意数据,但不能任意写入.该对象也非常适合在内核中放置任意数据.这意味着它可以用来重新分配易受攻击的分块并控制 ghost 分块的内容.</p>
+<h4 id="NonPagedPoolNx-1"><a href="#NonPagedPoolNx-1" class="headerlink" title="NonPagedPoolNx"></a>NonPagedPoolNx</h4><p>通过WriteFile写入管道是一种已知的喷射NonPagedPoolNx技术,在向管道中写入时,NpAddDataQueueEntry函数会创建下图所示的结构体.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">struct</span> <span class="title class_">PipeQueueEntry</span></span><br><span class="line">&#123;</span><br><span class="line">    LIST_ENTRY list;</span><br><span class="line">    IRP *linkedIRP;</span><br><span class="line">    __int64 SecurityClientContext ;</span><br><span class="line">    <span class="type">int</span> isDataInKernel ;</span><br><span class="line">    <span class="type">int</span> remaining_bytes__ ;</span><br><span class="line">    <span class="type">int</span> DataSize;</span><br><span class="line">    <span class="type">int</span> field_2C;</span><br><span class="line">    <span class="type">char</span> data [<span class="number">1</span>];</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>PipeQueueEntry2 的数据和大小由用户控制,因为数据直接存储在结构后面.<br>在使用函数 NpReadDataQueue 中的条目时,内核将遍历条目列表,并使用每个条目检索数据.PipeQueueEntry的数据和大小</p>
+<p>如果 isDataInKernel 字段等于 1,则数据不会直接存储在结构体后面,而是将指针存储在由 linkedIRP 指向的 IRP 中.如果攻击者可以完全控制该结构,他可能会将 isDataInKernel 设置为 1,并将linkedIRP 指向用户域.然后,用户区中 linkedIRP 的 SystemBuffer字段（偏移量 0x18）就会被用来从条目中读取数据.这提供了一个任意读取的基元.该对象也非常适合在内核中放置任意数据.这意味着它可以用来重新分配易受攻击的分块并控制幽灵分的<br>内容.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span> ( PipeQueueEntry-&gt;isDataAllocated== <span class="number">1</span> )</span><br><span class="line">	data_ptr=(PipeQueueEntry-&gt;linkedIRP-&gt;SystemBuffer );</span><br><span class="line"><span class="keyword">else</span></span><br><span class="line">    data_ptr = PipeQueueEntry-&gt;data;</span><br><span class="line">    [...]</span><br><span class="line">    <span class="built_in">memmove</span> ((<span class="type">void</span> *)(dst_buf + dst_len-cur_read_offset), </span><br><span class="line">             &amp;data_ptr[PipeQueueEntry-&gt;DataSize-cur_entry_offset], copy_size );</span><br></pre></td></tr></table></figure>
+
+<h3 id="4-堆喷射"><a href="#4-堆喷射" class="headerlink" title="4.堆喷射"></a>4.堆喷射</h3><p>本节将介绍堆喷射技术,以获得所需的内存布局.</p>
+<p>为了获得之前讲到的ghost chunk所需的内存布局,必须进行一些对喷射.对喷射取决于Vulnerable Chunk的大小,不同的大小会通过不同的分配后端,结构也可能不同.</p>
+<p>为了简化堆喷的过程,确保相应的快表是空的,分配超过256个大小合适的大块可以确保这一点.</p>
+<p>如果易受攻击的数据块小于 0x200,那么它将位于 LFH 后端.然后,用完全相同的块进行喷射,以相应的bucket粒度为模,确保它们全部都是从同一个bucket中分配.如前面所讲,当请求分配时,LFH后端将通过以下方式扫描BlockBItmap:以32个区块为一组,随机选择一个空闲区块.</p>
+<p>在分配vulnerable chunk的前后个分配超过32个合适大小的区块有助于克服随机化.</p>
+<p>如果vulnerable chunk的块大小大于0x200,但是小于0x1000,那么将由可变大小后端进行分配.然后通过与vulnerable chunk大小相同的数据块进行喷射的话,大块可能会被分割,从而导致喷射失败.</p>
+<p>首先,分配上千个选中大小的块,以确保首先清空FreeChunkTree中所有大于所选大小的块.</p>
+<p>然后,分配器将分配0x10000字节的新VS字段,并将其放入FreeChunkTree.</p>
+<p>然后再分配几千个分块,这些分块最终会进入新的大空闲分块,因此是连续的,然后释放最后分配的块的3分之1,用于填充FreeChunkTree,只是放3分之1将确保不会有数据块合并,最后重新分配已释放的数据块,以最大限度增加喷射机会.</p>
+<p>由于所有的利用技术都需要重新分配和释放vulnerable chunk和ghost chunk,因此启用相用的动态快表以简化空闲块的恢复过程,确实很有趣,要做到这点,一个简单的方法是分配数千个相应大小的块,等待2秒,再分配数据千个块,等待一秒,这样我们就能确保平衡管理器重新平衡了相应的快表,分配上千个块可以确保该快表处于使用率最高的快表中,从而被启用,并且确保它有足够的空间.</p>
+<h3 id="5-利用"><a href="#5-利用" class="headerlink" title="5.利用"></a>5.利用</h3><p>为了演示下面的漏洞利用.我们创建了一个假漏洞.</p>
+<p>我们开发了一个windows驱动,公开了一个IOCTL,允许开发人员调用,可以做这些操作:</p>
+<p>1.在PagedPool中分配大小受控的分块</p>
+<p>2.触发该块中的受控memcpy,允许完全受控的池溢出</p>
+<p>3.释放已分配的数据块</p>
+<p>当然这只是为了做演示,提供了一些控制功能,实际需要让漏洞发挥作用.</p>
+<p>这些设置允许攻击者:</p>
+<p>1.控制vulnerable chunk的大小,这不是必须的,但是最好这样做,因为控制了大小,漏洞利用就更容易了.</p>
+<p>2.控制vulnerable chunk的分配和删除</p>
+<p>3.使用可控的值覆盖掉下个数据块POOL_HEADER前4字节.</p>
+<p>此外vulnerable chunk是在PagedPool进行分配的,这一点很重要,因为池的类型会改变漏洞利用中使用的对象,进而堆漏洞利用本身产生重大影响.此外,针对NonPagedPoolNx的利用非常相似,使用PipeQueueEntry就可以替代PipeAttribute,实现喷射并得到任意地址读写原语.</p>
+<p>在这个例子中,所选的漏洞块大小为0x180,关于易受攻击的数据块大小及其漏洞利用的影响,将在后面讨论. </p>
+<h4 id="创建ghost-chunk"><a href="#创建ghost-chunk" class="headerlink" title="创建ghost chunk"></a>创建ghost chunk</h4><p>第一步是对堆进行处理,以便在vulnerable chunk后放置一个受控对象.</p>
+<p>覆盖块中的对象可以是任何东西,唯一的要求是控制它何时被释放,为了简化漏洞利用,最好是选择一个可以喷射的对象.</p>
+<p>现在可以触发漏洞了,被覆盖的POOL_HEADER将被以下值替换:</p>
+<p>PreviousSize:0x15,此大小将*10.0x180-0x150&#x3D;0x30.即vulnerable chunk中伪造POOL_HEADER的偏移量.</p>
+<p>PoolIndex:0或者为任意值,未使用</p>
+<p>BlockSize:0或者为任意值,未使用</p>
+<p>PoolType:PoolType|4,设置CacheAligned位</p>
+<p>下图是一个触发溢出时的内存结构</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828145407588.png" alt="image-20230828145407588"></p>
+<p>伪造的POOL_HEADER必须放在vulnerable chunk的已知偏移位置,具体做法是释放vulnerable chunk中的对象,然后使用PipeAttribute重新分配该块.</p>
+<p>在演示中,伪造的POOL_HEADER在vulnerable chunk数据块中的偏移量位0x30,伪造的POOL_HEADER形式如下:</p>
+<p>PreviousSize:上一个大小,0或者任何值,不使用</p>
+<p>PoolIndex:0或者为任意值,未使用</p>
+<p>BlockSize:0x21,该值将*0x10,即为释放的块大小</p>
+<p>PoolType:PoolType,不设置CacheAligned和PoolQuota位</p>
+<p>BlockSize的值不是随机的,而是实际释放的块的大小,由于我们的目标是在分配后重复使用,因此需要选择一个易于重用的大小,由于所有小于0x200的块都在LFH中,因此必须避免这种大小,非LFH的最小大小是0x200的分配,也就是大小为0x210的块,0x210使用VS分配,可以使用动态快表.</p>
+<p>通过喷射和释放0x210大小的数据块,可以启用大小为0x210字节的动态快表.</p>
+<p>现在可以释放被覆盖的块,由于我们设置了CacheAligned,这将触发缓存对齐,它不会释放Overwritten chunk数据块的地址,而是释放OverwrittenChunkAddress-(0x15*0x10)处,也就是vulnerablechunkAddr+0x30处用于释放的POOL_HEADER也是我们进行伪造的,内核没有释放vulnerable chunk,而是释放了一个大小为0x210的数据块FreeGhostChunk,并将其放置在动态快表的顶部.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828151546439.png" alt="image-20230828151546439"></p>
+<p>遗憾的是,虚假的POOL_HEADER的PoolType并不影响释放的分块是放在PagedPool还是NonPagedPoolNx中,动态快表是由分配的段来选择的,而分配的段来自于分块的地址,这意味着vulnerable data chunk在PagedPool,那么Ghost Chunk也会放放置在PagedPool的动态快表中.</p>
+<p>被覆盖的数据块现在处于丢失状态,内核会认为它已经被释放,并且该数据块上的所有引用都已删除,不会再被使用.</p>
+<h4 id="泄露ghost-chunk"><a href="#泄露ghost-chunk" class="headerlink" title="泄露ghost chunk"></a>泄露ghost chunk</h4><p>现在ghost chunk可以通过PipeAttrubute对象重新分配了,PipeAttribute结构会覆盖放在vulnerable  data chunk中的属性值,通过读取该管道数据的值,就可以读取数据,而ghost chunk的PipeAttribute内容则会泄露,现在我们已经知道了ghost chunk的地址,也就是vulnerable data chunk的地址,如下图所示.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828152945452.png" alt="image-20230828152945452"></p>
+<h4 id="任意地址读原语"><a href="#任意地址读原语" class="headerlink" title="任意地址读原语"></a>任意地址读原语</h4><p>vulnerable  data chunk可以在另一次释放后,用其他的PipeAttribute重新分配,这一次分配后,PipeAttribute的数据将覆盖ghost chunk的PipeAttribute.因此,可以完全控制ghost chunk的PipeAttribute.一个新的PipeAttribute被注入到位于用户层的列表中.如下图所示.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828153350087.png" alt="image-20230828153350087"></p>
+<p>现在,通过请求读取ghost的PipeAttribute上的属性,内核将使用用户层的PipeAttribute,因此可以实现完全控制.如前面所述,通过控制AttributeValue指针和AttributeValueSize,可以实现一个任意地址读取的原语.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230828153640981.png" alt="image-20230828153640981"></p>
+<p>使用泄露的第一个指针和任意读原语,可以检索npfs代码段的指针,通过读取导入表,可以读取ntoskrnl代码段的指针.这提供了内核的基址,攻击者可以读取ExpPoolQuotaCookie的值,并获取漏洞利用进程中的EPROCESS结构和其TOKEN地址.</p>
+<h4 id="任意递减原语"><a href="#任意递减原语" class="headerlink" title="任意递减原语"></a>任意递减原语</h4><p>首先,在内核中使用PipeQueueEntry制作一个假的EPROCESS机构,并使用任意地址读取检索它的地址.</p>
+<p>然后,攻击者可以再次释放并重新分配vulnerable  chunk,以更改ghost chunk和它的POOL_HEADER中的内容.</p>
+<p>ghost chunk中的POOL_HEADER进行如下设置:</p>
+<p>PreviousSize:0或者任何值,不使用</p>
+<p>PoolIndex:0或者为任意值,未使用</p>
+<p>BlockSize:0x21,该值将*0x10,即为释放的块大小</p>
+<p>PoolType:8,设置PoolQuota位</p>
+<p>PoolQuota:ExpPoolQuotaCookie  xor FakeEprocessAddress xor GhostChunkAddress</p>
+<p>释放ghost chunk后,内核将尝试解引用EPROCESS的Quota count,它使用我们伪造的EPROCESS结构来查找指向要取消引用的值的指针.</p>
+<p>这将提供任意递减原语,递减值是PoolHeader中的BlockSize,因此它在0x0-0xff0,以0x10对齐.</p>
+<h4 id="从任意递减到System权限提升"><a href="#从任意递减到System权限提升" class="headerlink" title="从任意递减到System权限提升"></a>从任意递减到System权限提升</h4><p>在2022年,Cesar Cerrudo描述了一种通过设置Token结构的Privileges.Enabled字段提升权限的技术.Privileges.Enabled字段用 于 保存该进程已启用的权限.默认情 况 下 , 低完整性级别token的 Privileges.Enabled 设 置 为0x0000000000800000,它只提供 SeChangeNotifyPrivilege 权限.如果<br>在该位字段上减一,它就会变成 0x000000000007ffff,从而启用更多权限.</p>
+<p>通过设置该位字段的第 20 位,可以启用 SeDebugPrivilege.SeDebugPrivilege 允许一个进程调试系统中的任何进程,因此可以在特权进程中注入任何代码.</p>
+<p>文中介绍了Quota Process Pointer Overwrite技术,可以使用任意递减原语来设置进程的SeDebug权限.</p>
+<p>下图介绍了这种技术.</p>
+<p><img src="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/image-20230829104337823.png" alt="image-20230829104337823"></p>
+<p>不过从win10 1607版本开始,内核现在也会检查token的Privileges.Present 字段的值.token的 Privileges.Present 字段是通过使用 AdjustTokenPrivileges API（调整token特权 API）为该token启用权限列表的.因此token的实际权限就是Privileges.Present和Privileges.Enable字段决定.</p>
+<p>默认情况下,低完整性级别的token中Privileges.Present 设置为0x602880000,由于0x602880000 &amp; (1&lt;&lt;20) &#x3D;&#x3D;0,在Privileges.Enabled 中 设 置 SeDebugPrivilege 不 足 以 获 得SeDebugPrivilege.一 种 方 法 是 递 减 Privileges.Present 比 特 字 段 , 以 便 在Privileges.Present 比特字段中获取SeDebugPrivilege.然后,攻击者可以使用 AdjustTokenPrivileges API 来启用 SeDebugPrivilege.然<br>而,SepAdjustPrivileges 函数会进行额外检查,根据 TOKEN 的完整性,进程无法启用任何权限,即使想要的权限在 Privileges.Present位域中.对于高完整性级别,进程可以启用 Privileges.Present 字段中 的 任 何 权 限 . 对 于 中 完 整 性 级 别 , 进 程 只 能 启 用Privileges.Present 和 0x1120160684 位字段中的特权.对于低完整性级别,进程只能启用 Privileges.Present 和位字段 0x202800000 中的权限.<br>这意味着,这种通过一次任意递减获得 SYSTEM 的技术已经失效.<br>不过,也完全可以通过两次任意递减来实现,首先递减Privileges.Enabled,然后递Privileges.Present.<br>可以重新分配幽灵块,并第二次覆盖其 POOL_HEADER,以获得第二次任意递减.一 旦 获 得 SeDebugPrivilege , 漏 洞 利 用 者 就 可 以 打 开 任 何SYSTEM 进程,并在其中注入 shellcode,以 SYSTEM 身份弹出 shell.</p>
+<h4 id="关于漏洞对象的大小"><a href="#关于漏洞对象的大小" class="headerlink" title="关于漏洞对象的大小"></a>关于漏洞对象的大小</h4><p>根据易受攻击对象的大小,漏洞利用可能会有不同的要求.上述漏洞利用方法只适用于最小大小为 0x130 的易受攻击数据块.这是因为幽灵分块的大小必须至少为 0x210.如果易受攻击的块大小小于 0x130,ghost 块的分配就会覆盖被覆盖块后面的块,释放时就会引发崩溃.这个问题是可以解决的,但留给读者一个练习.LFH 中的易受攻击对象（0x200 以下的数据块）与 VS 段中的易<br>受攻击对象（大于0x200）有一些不同之处.主要原因是 VS 块前面有一个额外的头.这意味着要控制VS 段中下一个分块的 POOL_HEADER,堆溢出至少需要 0x14 字节.这也意味着,当被覆盖的分块被释放时,它的_HEAP_VS_CHUNK_HEADER 必须得到修复.此外,必须注意不要释放紧随被覆盖的数据块之后的 2 个数据块,因为 VS 的释放机制可能会读<br>取被覆盖数据块的 VS 标头,试图合并 3 个空闲数据块.最后,正如前面所讲,LFH 和 VS 中的堆批量处理有很大不同.</p>
+<h2 id="5-结论"><a href="#5-结论" class="headerlink" title="5.结论"></a>5.结论</h2><p>本文介绍了 Windows 10 19H1 更新后的池内部状态.段堆（Segment Heap）已被引入内核, 它不需要分块元数据即可正常工作.不过,以前位于每个分块顶部的 POOL_HEADER 仍然存在,只是使用方式不同.我们演示了在 Windows 内核中使用堆溢出进行攻击的一些方法,具体方法是攻击池的内部结构.<br>所演示的漏洞利用程序可适用于任何提供最小堆溢出的漏洞,并允许将本地权限从 “低完整性 “级别升级到 “系统 “级别.</p>
 
     </div>
 
@@ -476,7 +585,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">Windows10内核池管理机制与利用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B1%A0%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">1.池的内部结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BB%8Ewin7%E5%BC%80%E5%A7%8B%E7%9A%84%E6%94%BB%E5%87%BB%E4%B8%8E%E7%BC%93%E8%A7%A3%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.1.</span> <span class="nav-text">2.从win7开始的攻击与缓解措施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NonPagedPoolNx"><span class="nav-number">1.1.2.</span> <span class="nav-text">NonPagedPoolNx</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B8%A6%E6%9C%89%E6%AE%B5%E5%A0%86%E7%9A%84%E6%B1%A0%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">2.带有段堆的池分配器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%AE%B5%E5%A0%86%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.段堆内部结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%AE%B5%E5%90%8E%E7%AB%AF"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.段后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%AF%E5%8F%98%E5%A4%A7%E5%B0%8F%E5%90%8E%E7%AB%AF-VS"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.可变大小后端(VS)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86%E5%90%8E%E7%AB%AF-LFH"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.低碎片堆后端(LFH)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8A%A8%E6%80%81%E5%BF%AB%E8%A1%A8-Dynamic-Lookaside"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.动态快表(Dynamic Lookaside)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-POOL-HEADER"><span class="nav-number">1.2.6.</span> <span class="nav-text">6. POOL_HEADER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E7%BC%93%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-number">1.2.7.</span> <span class="nav-text">7.缓存对齐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.2.8.</span> <span class="nav-text">8.概述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%94%BB%E5%87%BBPOOL-HADER"><span class="nav-number">1.3.</span> <span class="nav-text">3.攻击POOL_HADER</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%AF%A1%E6%94%B9BlockSize-%E4%BB%8EBlockSize%E5%A0%86%E6%BA%A2%E5%87%BA%E5%88%B0%E6%9B%B4%E5%A4%A7%E7%9A%84%E5%A0%86%E6%BA%A2%E5%87%BA"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.篡改BlockSize,从BlockSize堆溢出到更大的堆溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%AF%A1%E6%94%B9PoolType"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.篡改PoolType</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%97%E6%8E%92%E5%88%97%E6%B7%B7%E6%B7%86"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">块排列混淆</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%80%9A%E7%94%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%BC%80%E5%8F%91"><span class="nav-number">1.4.</span> <span class="nav-text">4.通用漏洞利用开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BF%85%E8%A6%81%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.必要条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%88%A9%E7%94%A8%E7%AD%96%E7%95%A5"><span class="nav-number">1.4.2.</span> <span class="nav-text">2.利用策略</span></a></li></ol></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95"><span class="nav-number">1.</span> <span class="nav-text">Windows10内核池管理机制与利用方法</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%B1%A0%E7%9A%84%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.1.</span> <span class="nav-text">1.池的内部结构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E4%BB%8Ewin7%E5%BC%80%E5%A7%8B%E7%9A%84%E6%94%BB%E5%87%BB%E4%B8%8E%E7%BC%93%E8%A7%A3%E6%8E%AA%E6%96%BD"><span class="nav-number">1.1.1.</span> <span class="nav-text">2.从win7开始的攻击与缓解措施</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#NonPagedPoolNx"><span class="nav-number">1.1.2.</span> <span class="nav-text">NonPagedPoolNx</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B8%A6%E6%9C%89%E6%AE%B5%E5%A0%86%E7%9A%84%E6%B1%A0%E5%88%86%E9%85%8D%E5%99%A8"><span class="nav-number">1.2.</span> <span class="nav-text">2.带有段堆的池分配器</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E6%AE%B5%E5%A0%86%E5%86%85%E9%83%A8%E7%BB%93%E6%9E%84"><span class="nav-number">1.2.1.</span> <span class="nav-text">1.段堆内部结构</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E6%AE%B5%E5%90%8E%E7%AB%AF"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.段后端</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%8F%AF%E5%8F%98%E5%A4%A7%E5%B0%8F%E5%90%8E%E7%AB%AF-VS"><span class="nav-number">1.2.3.</span> <span class="nav-text">3.可变大小后端(VS)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86%E5%90%8E%E7%AB%AF-LFH"><span class="nav-number">1.2.4.</span> <span class="nav-text">4.低碎片堆后端(LFH)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%8A%A8%E6%80%81%E5%BF%AB%E8%A1%A8-Dynamic-Lookaside"><span class="nav-number">1.2.5.</span> <span class="nav-text">5.动态快表(Dynamic Lookaside)</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-POOL-HEADER"><span class="nav-number">1.2.6.</span> <span class="nav-text">6. POOL_HEADER</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#7-%E7%BC%93%E5%AD%98%E5%AF%B9%E9%BD%90"><span class="nav-number">1.2.7.</span> <span class="nav-text">7.缓存对齐</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#8-%E6%A6%82%E8%BF%B0"><span class="nav-number">1.2.8.</span> <span class="nav-text">8.概述</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%94%BB%E5%87%BBPOOL-HADER"><span class="nav-number">1.3.</span> <span class="nav-text">3.攻击POOL_HADER</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E7%AF%A1%E6%94%B9BlockSize-%E4%BB%8EBlockSize%E5%A0%86%E6%BA%A2%E5%87%BA%E5%88%B0%E6%9B%B4%E5%A4%A7%E7%9A%84%E5%A0%86%E6%BA%A2%E5%87%BA"><span class="nav-number">1.3.1.</span> <span class="nav-text">1.篡改BlockSize,从BlockSize堆溢出到更大的堆溢出</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E7%AF%A1%E6%94%B9PoolType"><span class="nav-number">1.3.2.</span> <span class="nav-text">2.篡改PoolType</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%9D%97%E6%8E%92%E5%88%97%E6%B7%B7%E6%B7%86"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">块排列混淆</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-%E9%80%9A%E7%94%A8%E6%BC%8F%E6%B4%9E%E5%88%A9%E7%94%A8%E5%BC%80%E5%8F%91"><span class="nav-number">1.4.</span> <span class="nav-text">4.通用漏洞利用开发</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BF%85%E8%A6%81%E6%9D%A1%E4%BB%B6"><span class="nav-number">1.4.1.</span> <span class="nav-text">1.必要条件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%88%A9%E7%94%A8%E7%AD%96%E7%95%A5"><span class="nav-number">1.4.2.</span> <span class="nav-text">2.利用策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E7%9B%AE%E6%A0%87%E5%AF%B9%E8%B1%A1"><span class="nav-number">1.4.3.</span> <span class="nav-text">3.目标对象</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#NonPagedPoolNx-1"><span class="nav-number">1.4.3.1.</span> <span class="nav-text">NonPagedPoolNx</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%A0%86%E5%96%B7%E5%B0%84"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.堆喷射</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-%E5%88%A9%E7%94%A8"><span class="nav-number">1.4.5.</span> <span class="nav-text">5.利用</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%88%9B%E5%BB%BAghost-chunk"><span class="nav-number">1.4.5.1.</span> <span class="nav-text">创建ghost chunk</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E6%B3%84%E9%9C%B2ghost-chunk"><span class="nav-number">1.4.5.2.</span> <span class="nav-text">泄露ghost chunk</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%8E%9F%E8%AF%AD"><span class="nav-number">1.4.5.3.</span> <span class="nav-text">任意地址读原语</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%BB%E6%84%8F%E9%80%92%E5%87%8F%E5%8E%9F%E8%AF%AD"><span class="nav-number">1.4.5.4.</span> <span class="nav-text">任意递减原语</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E4%BB%8E%E4%BB%BB%E6%84%8F%E9%80%92%E5%87%8F%E5%88%B0System%E6%9D%83%E9%99%90%E6%8F%90%E5%8D%87"><span class="nav-number">1.4.5.5.</span> <span class="nav-text">从任意递减到System权限提升</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#%E5%85%B3%E4%BA%8E%E6%BC%8F%E6%B4%9E%E5%AF%B9%E8%B1%A1%E7%9A%84%E5%A4%A7%E5%B0%8F"><span class="nav-number">1.4.5.6.</span> <span class="nav-text">关于漏洞对象的大小</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E7%BB%93%E8%AE%BA"><span class="nav-number">1.5.</span> <span class="nav-text">5.结论</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
