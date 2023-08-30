@@ -34,7 +34,7 @@
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png">
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png">
 <meta property="article:published_time" content="2023-08-29T06:35:40.058Z">
-<meta property="article:modified_time" content="2023-08-30T02:24:20.370Z">
+<meta property="article:modified_time" content="2023-08-30T03:13:31.020Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png">
@@ -187,7 +187,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-30 10:24:20" itemprop="dateModified" datetime="2023-08-30T10:24:20+08:00">2023-08-30</time>
+                <time title="修改时间：2023-08-30 11:13:31" itemprop="dateModified" datetime="2023-08-30T11:13:31+08:00">2023-08-30</time>
               </span>
 
           
@@ -230,7 +230,12 @@
 <p>影响判断结果的最直接方法是修改CFGBitmap,但是从上面分析的结果来看,CFGBitmap是内核映射过来的只读内存,无法修改.</p>
 <h3 id="通用的任意地址读写的绕过方法"><a href="#通用的任意地址读写的绕过方法" class="headerlink" title="通用的任意地址读写的绕过方法"></a>通用的任意地址读写的绕过方法</h3><p>如果漏洞可以构造任意地址读写的原语,那么可以修改掉堆栈的返回地址,劫持控制流</p>
 <p>在CFG中,返回的地址并没有受到CFG的保护,只是保护了间接调用的目标地址.</p>
-<h2 id="2-CET"><a href="#2-CET" class="headerlink" title="2.CET"></a>2.CET</h2>
+<h3 id="通过RPC的方式绕过"><a href="#通过RPC的方式绕过" class="headerlink" title="通过RPC的方式绕过"></a>通过RPC的方式绕过</h3><p>在我之前分析的CVE-2021-26411的exp中,其中使用了RPC的方式去绕过CFG的保护,通过构造RPC_MESSAGE去调用一些函数完成RCE,不过前提是需要任意地址读写原语.</p>
+<h2 id="2-CET"><a href="#2-CET" class="headerlink" title="2.CET"></a>2.CET</h2><p>CET控制流保护技术是intel引入的基于硬件的缓解机制,它弥补了CFG的缺陷,对函数的返回地址进行了保护,对ROP的攻击手段进行以缓解,最初微软使用的方案名为RFG,与CET类似.</p>
+<p>在win10 19h1开始支持了CET技术,但是必须在11代以上intel cpu上才能使用.</p>
+<p>CET的技术主要有2部分组成</p>
+<h3 id="shadow-stack"><a href="#shadow-stack" class="headerlink" title="shadow stack"></a>shadow stack</h3><p>在shadow stack中存储了每个函数的返回地址,当程序执行函数调用时,会将返回地址记录到shadow stack中,这个shadow stack是记录在内核中的,ring3无法访问,在函数的末尾处,会将shadow stack中记录的返回地址映射与当前返回地址进行对比,如果返回地址被篡改了,这里就会直接检测到.</p>
+
     </div>
 
     
@@ -248,10 +253,7 @@
     <a href="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/" rel="prev" title="Windows10内核池管理机制与利用方法">
       <i class="fa fa-chevron-left"></i> Windows10内核池管理机制与利用方法
     </a></div>
-      <div class="post-nav-item">
-    <a href="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/" rel="next" title="windows现代漏洞缓解机制与绕过-CFG">
-      windows现代漏洞缓解机制与绕过-CFG <i class="fa fa-chevron-right"></i>
-    </a></div>
+      <div class="post-nav-item"></div>
     </div>
       </footer>
     
@@ -310,7 +312,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG-amp-CET-amp-XFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.1.</span> <span class="nav-text">基本原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E7%9A%84%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99%E7%9A%84%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.2.</span> <span class="nav-text">通用的任意地址读写的绕过方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CET"><span class="nav-number">1.2.</span> <span class="nav-text">2.CET</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG-amp-CET-amp-XFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.1.</span> <span class="nav-text">基本原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E7%9A%84%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99%E7%9A%84%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.2.</span> <span class="nav-text">通用的任意地址读写的绕过方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E8%BF%87RPC%E7%9A%84%E6%96%B9%E5%BC%8F%E7%BB%95%E8%BF%87"><span class="nav-number">1.1.3.</span> <span class="nav-text">通过RPC的方式绕过</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CET"><span class="nav-number">1.2.</span> <span class="nav-text">2.CET</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#shadow-stack"><span class="nav-number">1.2.1.</span> <span class="nav-text">shadow stack</span></a></li></ol></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
@@ -324,7 +326,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">21</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
