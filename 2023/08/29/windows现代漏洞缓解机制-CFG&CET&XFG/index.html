@@ -20,26 +20,26 @@
     var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
   </script>
 
-  <meta name="description" content="windows现代漏洞缓解机制与绕过-CFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
+  <meta name="description" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
 <meta property="og:type" content="article">
-<meta property="og:title" content="windows现代漏洞缓解机制与绕过-CFG">
-<meta property="og:url" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/index.html">
+<meta property="og:title" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG">
+<meta property="og:url" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/index.html">
 <meta property="og:site_name" content="Ash blog">
-<meta property="og:description" content="windows现代漏洞缓解机制与绕过-CFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
+<meta property="og:description" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
 <meta property="og:locale" content="zh_CN">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829145300483.png">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154333834.png">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154531249.png">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829162517610.png">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170857391.png">
-<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170945425.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154333834.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154531249.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829162517610.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png">
 <meta property="article:published_time" content="2023-08-29T06:35:40.058Z">
-<meta property="article:modified_time" content="2023-08-29T09:39:33.768Z">
+<meta property="article:modified_time" content="2023-08-30T02:24:20.370Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829145300483.png">
+<meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png">
 
-<link rel="canonical" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/">
+<link rel="canonical" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/">
 
 
 <script id="page-configurations">
@@ -52,7 +52,7 @@
   };
 </script>
 
-  <title>windows现代漏洞缓解机制与绕过-CFG | Ash blog</title>
+  <title>windows现代漏洞缓解机制-CFG&CET&XFG | Ash blog</title>
   
 
 
@@ -157,7 +157,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/avatar.gif">
@@ -170,7 +170,7 @@
     </span>
       <header class="post-header">
         <h1 class="post-title" itemprop="name headline">
-          windows现代漏洞缓解机制与绕过-CFG
+          windows现代漏洞缓解机制-CFG&CET&XFG
         </h1>
 
         <div class="post-meta">
@@ -179,10 +179,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-08-29 14:35:40 / 修改时间：17:39:33" itemprop="dateCreated datePublished" datetime="2023-08-29T14:35:40+08:00">2023-08-29</time>
+              <time title="创建时间：2023-08-29 14:35:40" itemprop="dateCreated datePublished" datetime="2023-08-29T14:35:40+08:00">2023-08-29</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-08-30 10:24:20" itemprop="dateModified" datetime="2023-08-30T10:24:20+08:00">2023-08-30</time>
+              </span>
 
           
 
@@ -195,19 +201,19 @@
     <div class="post-body" itemprop="articleBody">
 
       
-        <h1 id="windows现代漏洞缓解机制与绕过-CFG"><a href="#windows现代漏洞缓解机制与绕过-CFG" class="headerlink" title="windows现代漏洞缓解机制与绕过-CFG"></a>windows现代漏洞缓解机制与绕过-CFG</h1><h2 id="1-CFG-x2F-KCFG"><a href="#1-CFG-x2F-KCFG" class="headerlink" title="1.CFG&#x2F;KCFG"></a>1.CFG&#x2F;KCFG</h2><p>控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.</p>
+        <h1 id="windows现代漏洞缓解机制-CFG-amp-CET-amp-XFG"><a href="#windows现代漏洞缓解机制-CFG-amp-CET-amp-XFG" class="headerlink" title="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG"></a>windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</h1><h2 id="1-CFG-x2F-KCFG"><a href="#1-CFG-x2F-KCFG" class="headerlink" title="1.CFG&#x2F;KCFG"></a>1.CFG&#x2F;KCFG</h2><p>控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.</p>
 <p>CFG的实现对函数间接的调用进行了保护.</p>
 <p>通常来说调用一个对象的内部函数时,通过虚函数表进行调用,它所调用的目标地址不是在编译时就确定的,而是在运行时决定的.漏洞利用者可以通过一些漏洞对函数地址进行覆盖,当发生调用时就会执行到shellcode.</p>
 <p>下图是一个开启了CFG防护的程序它的调用过程.</p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829145300483.png" alt="image-20230829145300483"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png" alt="image-20230829145300483"></p>
 <p>在调用之前,调用目标的地址esi,会被传递到_guard_check_icall函数中,这也是CFG防护执行的位置,这个函数指向ntdll!LdrpValidateUserCallTarget函数.</p>
 <p>在LdrpValidateUserCallTarget函数中,会首先获取一个位图CFGBitmap,这个位图表示进程空间中所有函数的起始位置,进程空间中每8个字节的状态对应CFGBitmap的一个位.如果8个字节中有一个函数起始的地址,则CFGBitmap中的相应位会被置1.</p>
 <p>所以它是用这个CFGBitmap进行调用地址的验证的,如果对应的值位1,那么表示调用的目标地址是有效的,如果为0那么就是无效的.有效不做处理,无效调用LdrpHandleInvalidUserCallTarget.</p>
 <p>这其中涉及到了将调用地址转换为CFGBitmap中某一位的过程,最高的3个字节是CFGBitmap中的偏移量.最后的1个字节中的4-8位,如果目标地址未与0x10对齐,也就是0xf&amp;目标地址!&#x3D;0,那么4-8位的值|1就是位偏移值.</p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154333834.png" alt="image-20230829154333834"></p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829154531249.png" alt="image-20230829154531249"></p>
-<h2 id="2-基本原理"><a href="#2-基本原理" class="headerlink" title="2.基本原理"></a>2.基本原理</h2><p>在PE文件的LoadConfigTable中可以看到关于CFG的一些信息</p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829162517610.png" alt="image-20230829162517610"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154333834.png" alt="image-20230829154333834"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154531249.png" alt="image-20230829154531249"></p>
+<h3 id="基本原理"><a href="#基本原理" class="headerlink" title="基本原理"></a>基本原理</h3><p>使用dumpbin,在PE文件的LoadConfigTable中可以看到关于CFG的一些信息</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829162517610.png" alt="image-20230829162517610"></p>
 <p>Guard CF function table:指向了函数RVA列表的指针,其中每个RVA被转换为CFGBitmap中的1,CFGBitmap中的位信息,都是来源于这张表.</p>
 <p>Guard CF Function count:表示RVA列表中记录的数量</p>
 <p>Guard Flags:CF instrumented表示该程序已经启用CFG</p>
@@ -219,11 +225,12 @@
 <p>在用户模式下,可以获取PspSystemDllInitBlock全局变量中的CFGBitmap字段硬编码.</p>
 <p>最后在调用LdrpCfgProcessLoadConfig中将_guard_check_icall指向ntdll.dll!LdrpValidateUserCallTarget.</p>
 <p>如果检查到地址无效,会调用函数LdrpHandleInvalidUserCallTarget,该函数主要作用检查dep,执行0x29中断,对应的中断处理函数是KiRaiseSecurityCheckFailure,作用是停止进程.</p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170857391.png" alt="image-20230829170857391"></p>
-<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/image-20230829170945425.png" alt="image-20230829170945425"></p>
-<h2 id="3-CFG-Bypass"><a href="#3-CFG-Bypass" class="headerlink" title="3.CFG Bypass"></a>3.CFG Bypass</h2><p>影响判断结果的最直接方法是修改CFGBitmap,但是从上面分析的结果来看,CFGBitmap是内核映射过来的只读内存,无法修改.</p>
-<p>对于Bypass CFG的方法,微软在迭代中通过一些方法进行了缓解,下面简单介绍下.</p>
-
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png" alt="image-20230829170857391"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png" alt="image-20230829170945425"></p>
+<p>影响判断结果的最直接方法是修改CFGBitmap,但是从上面分析的结果来看,CFGBitmap是内核映射过来的只读内存,无法修改.</p>
+<h3 id="通用的任意地址读写的绕过方法"><a href="#通用的任意地址读写的绕过方法" class="headerlink" title="通用的任意地址读写的绕过方法"></a>通用的任意地址读写的绕过方法</h3><p>如果漏洞可以构造任意地址读写的原语,那么可以修改掉堆栈的返回地址,劫持控制流</p>
+<p>在CFG中,返回的地址并没有受到CFG的保护,只是保护了间接调用的目标地址.</p>
+<h2 id="2-CET"><a href="#2-CET" class="headerlink" title="2.CET"></a>2.CET</h2>
     </div>
 
     
@@ -238,10 +245,13 @@
         
     <div class="post-nav">
       <div class="post-nav-item">
-    <a href="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/" rel="prev" title="windows现代漏洞缓解机制-CFG&CET&XFG">
-      <i class="fa fa-chevron-left"></i> windows现代漏洞缓解机制-CFG&CET&XFG
+    <a href="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/" rel="prev" title="Windows10内核池管理机制与利用方法">
+      <i class="fa fa-chevron-left"></i> Windows10内核池管理机制与利用方法
     </a></div>
-      <div class="post-nav-item"></div>
+      <div class="post-nav-item">
+    <a href="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG/" rel="next" title="windows现代漏洞缓解机制与绕过-CFG">
+      windows现代漏洞缓解机制与绕过-CFG <i class="fa fa-chevron-right"></i>
+    </a></div>
     </div>
       </footer>
     
@@ -300,7 +310,7 @@
 
       <!--noindex-->
       <div class="post-toc-wrap sidebar-panel">
-          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6%E4%B8%8E%E7%BB%95%E8%BF%87-CFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制与绕过-CFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.2.</span> <span class="nav-text">2.基本原理</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-CFG-Bypass"><span class="nav-number">1.3.</span> <span class="nav-text">3.CFG Bypass</span></a></li></ol></li></ol></div>
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG-amp-CET-amp-XFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.1.</span> <span class="nav-text">基本原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E7%9A%84%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99%E7%9A%84%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.2.</span> <span class="nav-text">通用的任意地址读写的绕过方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CET"><span class="nav-number">1.2.</span> <span class="nav-text">2.CET</span></a></li></ol></li></ol></div>
       </div>
       <!--/noindex-->
 
