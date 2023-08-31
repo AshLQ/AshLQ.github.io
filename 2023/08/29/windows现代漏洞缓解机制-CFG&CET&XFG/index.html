@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 6.3.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"example.com","root":"/","scheme":"Pisces","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
+<meta property="og:type" content="article">
+<meta property="og:title" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG">
+<meta property="og:url" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/index.html">
+<meta property="og:site_name" content="Ash blog">
+<meta property="og:description" content="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG1.CFG&#x2F;KCFG控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831100554175.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831104457753.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831101517802.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831101633212.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831102343936.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831102539161.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154333834.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154531249.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829162517610.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png">
+<meta property="article:published_time" content="2023-08-29T06:35:40.058Z">
+<meta property="article:modified_time" content="2023-08-31T03:17:32.424Z">
+<meta property="article:author" content="Ash">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831100554175.png">
+
+<link rel="canonical" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>windows现代漏洞缓解机制-CFG&CET&XFG | Ash blog</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Ash blog</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ash">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ash blog">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          windows现代漏洞缓解机制-CFG&CET&XFG
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2023-08-29 14:35:40" itemprop="dateCreated datePublished" datetime="2023-08-29T14:35:40+08:00">2023-08-29</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-08-31 11:17:32" itemprop="dateModified" datetime="2023-08-31T11:17:32+08:00">2023-08-31</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h1 id="windows现代漏洞缓解机制-CFG-amp-CET-amp-XFG"><a href="#windows现代漏洞缓解机制-CFG-amp-CET-amp-XFG" class="headerlink" title="windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG"></a>windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</h1><h2 id="1-CFG-x2F-KCFG"><a href="#1-CFG-x2F-KCFG" class="headerlink" title="1.CFG&#x2F;KCFG"></a>1.CFG&#x2F;KCFG</h2><p>控制流防护CFG,内核中的实现称为KCFG,在windows10和windows8.1中默认启用的一种新的漏洞缓解机制.最低的编译器版本是VS2015,它的出现将会改变漏洞利用技术,就像ALSR通过堆喷绕过,DEP通过ROP技术进行绕过一样.</p>
+<p>CFG的实现对函数间接的调用进行了保护.</p>
+<p>通常来说调用一个对象的内部函数时,通过虚函数表进行调用,它所调用的目标地址不是在编译时就确定的,而是在运行时决定的.漏洞利用者可以通过一些漏洞对函数地址进行覆盖,当发生调用时就会执行到shellcode.</p>
+<h3 id="1-开启-x2F-未开启CFG对比"><a href="#1-开启-x2F-未开启CFG对比" class="headerlink" title="1.开启&#x2F;未开启CFG对比"></a>1.开启&#x2F;未开启CFG对比</h3><p>我使用的环境是visual studio 2022,测试代码如下,我创建了一个函数指针数组fun_array,存储了2个函数test1,test2,后面通过对fun_array对这两个函数进行了间接的调用.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;this is a indirect_call demo 1\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;this is a indirect_call demo 2\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">void</span> (*fun_array[])(<span class="type">void</span>) = &#123; test1,test2 &#125;;</span><br><span class="line">	fun_array[<span class="number">0</span>]();</span><br><span class="line">	fun_array[<span class="number">1</span>]();</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="1-未开启CFG"><a href="#1-未开启CFG" class="headerlink" title="1.未开启CFG"></a>1.未开启CFG</h4><p>直接编译后,调用过程如下,可以看到在间接调用时没有任何的防护,如果使用任意地址读写原语对fun_array进行篡改可以很轻松的完成利用.</p>
+<p> <img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831100554175.png" alt="image-20230831100554175"></p>
+<h4 id="2-开启CFG"><a href="#2-开启CFG" class="headerlink" title="2.开启CFG"></a>2.开启CFG</h4><p>下面我开起了控制流防护,重新编译</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831104457753.png" alt="image-20230831104457753"></p>
+<p>我编译时出现了不兼容的情况,需要把调试信息格式修改成”无”</p>
+<p> <img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831101517802.png" alt="image-20230831101517802"></p>
+<p> <img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831101633212.png" alt="image-20230831101633212"></p>
+<p>编译后如下,通过__guard_dispath_icall_fptr进行了调用,实际内部调用的函数ntdll!LdrpDispatchUserCallTarget对调用函数目标地址进行了验证,这跟我之前文章分析的是一致的.</p>
+<p>这里调用的是_guard_dispath_icall_fptr,需要讲下__guard_dispath_icall_fptr和_guard_check_icall.</p>
+<p>_guard_check_icall是执行检查的函数,检查通过才会调用到我们的函数,调用的操作再_guard_check_icall函数外.</p>
+<p>因为函数执行现在直接放到了__guard_dispath_icall_fptr里面,而不用先check再调用了,少了一个call,验证通过后会直接jmp eax,跳转到目标函数,其实没什么区别.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831102343936.png" alt="image-20230831102343936"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831102539161.png" alt="image-20230831102539161"></p>
+<h3 id="2-原理"><a href="#2-原理" class="headerlink" title="2.原理"></a>2.原理</h3><p>下图是一个开启了CFG防护的程序它的调用过程.</p>
+<p> <img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829145300483.png" alt="image-20230829145300483"></p>
+<p>在调用之前,调用目标的地址esi,会被传递到_guard_check_icall函数中,这也是CFG防护执行的位置,这个函数指向ntdll!LdrpValidateUserCallTarget函数.</p>
+<p>在LdrpValidateUserCallTarget函数中,会首先获取一个位图CFGBitmap,这个位图表示进程空间中所有函数的起始位置,进程空间中每8个字节的状态对应CFGBitmap的一个位.如果8个字节中有一个函数起始的地址,则CFGBitmap中的相应位会被置1.</p>
+<p>所以它是用这个CFGBitmap进行调用地址的验证的,如果对应的值位1,那么表示调用的目标地址是有效的,如果为0那么就是无效的.有效不做处理,无效调用LdrpHandleInvalidUserCallTarget.</p>
+<p>这其中涉及到了将调用地址转换为CFGBitmap中某一位的过程,最高的3个字节是CFGBitmap中的偏移量.最后的1个字节中的4-8位,如果目标地址未与0x10对齐,也就是0xf&amp;目标地址!&#x3D;0,那么4-8位的值|1就是位偏移值.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154333834.png" alt="image-20230829154333834"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829154531249.png" alt="image-20230829154531249"></p>
+<h3 id="3-实现"><a href="#3-实现" class="headerlink" title="3.实现"></a>3.实现</h3><p>使用dumpbin,在PE文件的LoadConfigTable中可以看到关于CFG的一些信息</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829162517610.png" alt="image-20230829162517610"></p>
+<p>Guard CF function table:指向了函数RVA列表的指针,其中每个RVA被转换为CFGBitmap中的1,CFGBitmap中的位信息,都是来源于这张表.</p>
+<p>Guard CF Function count:表示RVA列表中记录的数量</p>
+<p>Guard Flags:CF instrumented表示该程序已经启用CFG</p>
+<p>在操作系统启动阶段,会通过执行MilnitializeCfg对CFG位图的共享内存进行创建.</p>
+<p>它首先会查询注册表项SYSTEM\CurrentControlSet\Control\Session\Manager\kernel中MitigationOptions并设置全局变量MmEnableCfg,控制系统是否开启CFG功能.</p>
+<p>然后创建共享内存MiCfgBitMapSection,这个共享内存是根据用户模式空间大小计算得出的,这意味着CFG位图可以表示整个用户空间.MiCfgBitMapSection包含了CFGBitmap.</p>
+<p>后面内核会对加载到系统的PE文件,进行读取和计算的操作,写入CFGBitmap.</p>
+<p>在初始化和处理完成后,CFGBitmap的地址需要映射到用户层进行使用,内核会调用PspPrepareSystemDllInitBlock函数,将CFGBitmap映射地址和长度写入到全局变量的字段中,全局变量的数据结构就是PsSystemDllInitBlock结构.它是一个固定地址,可以从用户模式和内核模式中访问.</p>
+<p>在用户模式下,可以获取PspSystemDllInitBlock全局变量中的CFGBitmap字段硬编码.</p>
+<p>最后在调用LdrpCfgProcessLoadConfig中将_guard_check_icall指向ntdll.dll!LdrpValidateUserCallTarget.</p>
+<p>如果检查到地址无效,会调用函数LdrpHandleInvalidUserCallTarget,该函数主要作用检查dep,执行0x29中断,对应的中断处理函数是KiRaiseSecurityCheckFailure,作用是停止进程.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png" alt="image-20230829170857391"></p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png" alt="image-20230829170945425"></p>
+<p>影响判断结果的最直接方法是修改CFGBitmap,但是从上面分析的结果来看,CFGBitmap是内核映射过来的只读内存,无法修改.</p>
+<h3 id="4-存在的一些绕过方式"><a href="#4-存在的一些绕过方式" class="headerlink" title="4.存在的一些绕过方式"></a>4.存在的一些绕过方式</h3><h4 id="1-通用的任意地址读写的绕过方法"><a href="#1-通用的任意地址读写的绕过方法" class="headerlink" title="1.通用的任意地址读写的绕过方法"></a>1.通用的任意地址读写的绕过方法</h4><p>如果漏洞可以构造任意地址读写的原语,那么可以修改掉堆栈的返回地址,劫持控制流</p>
+<p>在CFG中,返回的地址并没有受到CFG的保护,只是保护了间接调用的目标地址.</p>
+<h4 id="2-通过RPC的方式绕过"><a href="#2-通过RPC的方式绕过" class="headerlink" title="2.通过RPC的方式绕过"></a>2.通过RPC的方式绕过</h4><p>在我之前分析的CVE-2021-26411的exp中,其中使用了RPC的方式去绕过CFG的保护,通过构造RPC_MESSAGE去调用一些函数完成RCE,不过前提是需要任意地址读写原语.</p>
+<h4 id="3-通过合法的函数地址进行覆盖"><a href="#3-通过合法的函数地址进行覆盖" class="headerlink" title="3.通过合法的函数地址进行覆盖"></a>3.通过合法的函数地址进行覆盖</h4><p>在前面讲过CFG会通过检查CFGBitmap确认是否是一个合法的地址,但是在调用时函数时,使用一个记录在CFGBitmap中的函数地址对它进行覆盖,是不会被中断的,依然可以正常执行.如果使用WriteProcessMemeory的函数地址或者其他敏感的函数地址进行覆盖,可能会造成一些成功的利用,当然,这些前提是,函数地址是要记录在CFGBitmap里面的.</p>
+<p>关于这种情况,其实微软也考虑到了,并进行了缓解,这种技术称为XFG,在后面会进行介绍.</p>
+<h2 id="2-CET"><a href="#2-CET" class="headerlink" title="2.CET"></a>2.CET</h2><p>CET控制流保护技术是intel引入的基于硬件的缓解机制,它弥补了CFG的缺陷,对函数的返回地址进行了保护.</p>
+<p>最初微软使用的缓解方式名为RFG,与CET类似.</p>
+<p>在win10 19h1开始支持了CET技术,但是必须在11代以上intel cpu上才能使用.</p>
+<p>CET的技术主要有2部分组成shadow stack和indirect branch tracking</p>
+<h3 id="ROP-x2F-JOP-x2F-COP"><a href="#ROP-x2F-JOP-x2F-COP" class="headerlink" title="ROP&#x2F;JOP&#x2F;COP"></a>ROP&#x2F;JOP&#x2F;COP</h3><p>在CET引入后,ROP的攻击手法被完全缓解,因为ROP需要依赖ret指令执行堆栈上的后续指令的地址,就不能在堆栈中构造ROP链.</p>
+<p>JOP表示Jump Oriented Programming</p>
+<p>COP表示Control Oriented Programming</p>
+<p>这两种漏洞利用技术其实和ROP非常类似,ROP借助ret指令作为控制流的控制.</p>
+<p>JOP通过跳转JMP指令进行控制流的控制,比如通过一个任意地址读写的原语修改jmp指令的跳转目标,使程序跳转到shellcode处.</p>
+<p>COP通过call指令进行控制流的控制,通过任意地址读写原语修改call的目标进行劫持控制流.</p>
+<h3 id="shadow-stack"><a href="#shadow-stack" class="headerlink" title="shadow stack"></a>shadow stack</h3><p>在shadow stack中存储了每个函数的返回地址,当程序执行函数调用时,会将返回地址记录到shadow stack中,这个shadow stack是记录在内核中的,ring3无法访问,在函数的末尾处,会将shadow stack中记录的返回地址映射与当前返回地址进行对比,如果返回地址被篡改了,这里就会直接检测到.</p>
+<h3 id="indirect-branch-tracking"><a href="#indirect-branch-tracking" class="headerlink" title="indirect branch tracking"></a>indirect branch tracking</h3><p>间接分支跟踪,简称IBT,防止利用者修改间接分支指令指向任意地址.间接分支指令指的是从内存位置获取目标地址的指令.通过指令endbr32&#x2F;endbr64实现.</p>
+<p>它的工作原理是通过endbr32和endbr64在跳转之间做一个标记,在进行跳转时,cpu会判断下条指令是否为endbr32&#x2F;endbr64,若并不是则会触发异常.</p>
+<p>在win11中启用了该功能,在注册表项HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Virtualization\SecurityEnhancements\IsolateProcess\CET IBTEnabled</p>
+<h2 id="3-XFG"><a href="#3-XFG" class="headerlink" title="3.XFG"></a>3.XFG</h2>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2023/08/22/Windows10%E5%86%85%E6%A0%B8%E6%B1%A0%E7%AE%A1%E7%90%86%E6%9C%BA%E5%88%B6%E4%B8%8E%E5%88%A9%E7%94%A8%E6%96%B9%E6%B3%95/" rel="prev" title="Windows10内核池管理机制与利用方法">
+      <i class="fa fa-chevron-left"></i> Windows10内核池管理机制与利用方法
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG-amp-CET-amp-XFG"><span class="nav-number">1.</span> <span class="nav-text">windows现代漏洞缓解机制-CFG&amp;CET&amp;XFG</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-CFG-x2F-KCFG"><span class="nav-number">1.1.</span> <span class="nav-text">1.CFG&#x2F;KCFG</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-%E5%BC%80%E5%90%AF-x2F-%E6%9C%AA%E5%BC%80%E5%90%AFCFG%E5%AF%B9%E6%AF%94"><span class="nav-number">1.1.1.</span> <span class="nav-text">1.开启&#x2F;未开启CFG对比</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E6%9C%AA%E5%BC%80%E5%90%AFCFG"><span class="nav-number">1.1.1.1.</span> <span class="nav-text">1.未开启CFG</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E5%BC%80%E5%90%AFCFG"><span class="nav-number">1.1.1.2.</span> <span class="nav-text">2.开启CFG</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-%E5%8E%9F%E7%90%86"><span class="nav-number">1.1.2.</span> <span class="nav-text">2.原理</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-%E5%AE%9E%E7%8E%B0"><span class="nav-number">1.1.3.</span> <span class="nav-text">3.实现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-%E5%AD%98%E5%9C%A8%E7%9A%84%E4%B8%80%E4%BA%9B%E7%BB%95%E8%BF%87%E6%96%B9%E5%BC%8F"><span class="nav-number">1.1.4.</span> <span class="nav-text">4.存在的一些绕过方式</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#1-%E9%80%9A%E7%94%A8%E7%9A%84%E4%BB%BB%E6%84%8F%E5%9C%B0%E5%9D%80%E8%AF%BB%E5%86%99%E7%9A%84%E7%BB%95%E8%BF%87%E6%96%B9%E6%B3%95"><span class="nav-number">1.1.4.1.</span> <span class="nav-text">1.通用的任意地址读写的绕过方法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#2-%E9%80%9A%E8%BF%87RPC%E7%9A%84%E6%96%B9%E5%BC%8F%E7%BB%95%E8%BF%87"><span class="nav-number">1.1.4.2.</span> <span class="nav-text">2.通过RPC的方式绕过</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-%E9%80%9A%E8%BF%87%E5%90%88%E6%B3%95%E7%9A%84%E5%87%BD%E6%95%B0%E5%9C%B0%E5%9D%80%E8%BF%9B%E8%A1%8C%E8%A6%86%E7%9B%96"><span class="nav-number">1.1.4.3.</span> <span class="nav-text">3.通过合法的函数地址进行覆盖</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-CET"><span class="nav-number">1.2.</span> <span class="nav-text">2.CET</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#ROP-x2F-JOP-x2F-COP"><span class="nav-number">1.2.1.</span> <span class="nav-text">ROP&#x2F;JOP&#x2F;COP</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#shadow-stack"><span class="nav-number">1.2.2.</span> <span class="nav-text">shadow stack</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#indirect-branch-tracking"><span class="nav-number">1.2.3.</span> <span class="nav-text">indirect branch tracking</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-XFG"><span class="nav-number">1.3.</span> <span class="nav-text">3.XFG</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">Ash</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">21</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+  </nav>
+</div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">Ash</span>
+</div>
+  <div class="powered-by">由 <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://pisces.theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Pisces</a> 强力驱动
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
