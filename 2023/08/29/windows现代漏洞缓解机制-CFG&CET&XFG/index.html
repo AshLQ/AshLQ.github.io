@@ -39,8 +39,11 @@
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829162517610.png">
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170857391.png">
 <meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230829170945425.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831164241464.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831173050170.png">
+<meta property="og:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831170658124.png">
 <meta property="article:published_time" content="2023-08-29T06:35:40.058Z">
-<meta property="article:modified_time" content="2023-08-31T03:17:32.424Z">
+<meta property="article:modified_time" content="2023-09-01T02:15:33.438Z">
 <meta property="article:author" content="Ash">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://example.com/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831100554175.png">
@@ -193,7 +196,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-31 11:17:32" itemprop="dateModified" datetime="2023-08-31T11:17:32+08:00">2023-08-31</time>
+                <time title="修改时间：2023-09-01 10:15:33" itemprop="dateModified" datetime="2023-09-01T10:15:33+08:00">2023-09-01</time>
               </span>
 
           
@@ -269,7 +272,21 @@
 <h3 id="indirect-branch-tracking"><a href="#indirect-branch-tracking" class="headerlink" title="indirect branch tracking"></a>indirect branch tracking</h3><p>间接分支跟踪,简称IBT,防止利用者修改间接分支指令指向任意地址.间接分支指令指的是从内存位置获取目标地址的指令.通过指令endbr32&#x2F;endbr64实现.</p>
 <p>它的工作原理是通过endbr32和endbr64在跳转之间做一个标记,在进行跳转时,cpu会判断下条指令是否为endbr32&#x2F;endbr64,若并不是则会触发异常.</p>
 <p>在win11中启用了该功能,在注册表项HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Control\DeviceGuard\Virtualization\SecurityEnhancements\IsolateProcess\CET IBTEnabled</p>
-<h2 id="3-XFG"><a href="#3-XFG" class="headerlink" title="3.XFG"></a>3.XFG</h2>
+<h2 id="3-XFG"><a href="#3-XFG" class="headerlink" title="3.XFG"></a>3.XFG</h2><p>前面在讲CFG的绕过方式时,提到了XFG技术.</p>
+<p>在调用函数时,使用一个记录在CFGBitmap中的函数地址对它进行覆盖,是不会被中断的,依然可以正常执行.这是CFG的一个缺陷.即使有了CFG的保护,函数地址仍然可能会被其他函数所覆盖,造成无法控制和预知的情况,可能会对漏洞利用提供帮助.</p>
+<p>XFG就是用来解决这个问题的,它对调用的函数通过函数的类型生成一个hash,在调用时进行匹配,如果匹配不成功,就会发生崩溃.</p>
+<p>首先,我来编译一个启用了CFG的程序,代码如下,我新增了一个与前面类型不同的函数test3进行调用.</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span> <span class="string">&lt;iostream&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;this is a indirect_call demo 1\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;this is a indirect_call demo 2\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">void</span> <span class="title">test3</span><span class="params">(<span class="type">int</span> v1)</span> </span>&#123;</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;this is a indirect_call demo %d\n&quot;</span>, v1);</span><br><span class="line">&#125;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span></span><br><span class="line"><span class="function"></span>&#123;</span><br><span class="line">	<span class="built_in">system</span>(<span class="string">&quot;pause&quot;</span>);</span><br><span class="line">	<span class="built_in">void</span> (*fun_array[])(<span class="type">void</span>) = &#123; test1 ,test2 &#125;;</span><br><span class="line">	<span class="built_in">void</span> (*fun_array_param[])(<span class="type">int</span>) = &#123; test3 &#125;;</span><br><span class="line">	fun_array[<span class="number">0</span>]();</span><br><span class="line">	fun_array[<span class="number">1</span>]();</span><br><span class="line">	fun_array_param[<span class="number">0</span>](<span class="number">3</span>);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>我在编译这里遇到了问题,我使用了visual studio 2022 preview版本,系统是win11 22h2,通过Visual studio编译或者通过ci编译,虽然都可以编译成功,也会生成hash,但是内部调用的却不是xfg对应的验证函数.我觉得是因为我的系统不是preview版本导致的.预览版本我无法下载,只能静态分析了.</p>
+<p>编译和链接选项中都配置<code>/guard:xfg</code>就可以了.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831164241464.png" alt="image-20230831164241464"></p>
+<p> <img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831173050170.png" alt="image-20230831173050170"></p>
+<p>编译后的程序如下,__guard_xfg_dispatch_icall_fptr肯定就是xfg保护的验证函数,在调用之前,它传递了2个值,在r10寄存器传入了一个hash,在rax寄存器传递了调用目标地址.可以很明显的看到在调用相同类型的函数时,test1和test2 hash生成的是一样的,test3函数的hash与test1,test2不同.</p>
+<p><img src="/2023/08/29/windows%E7%8E%B0%E4%BB%A3%E6%BC%8F%E6%B4%9E%E7%BC%93%E8%A7%A3%E6%9C%BA%E5%88%B6-CFG&CET&XFG/image-20230831170658124.png" alt="image-20230831170658124"></p>
+<p>内部调用的函数未ntdll!LdrpDispatchUserCallTargetXFG</p>
+<p>&#x2F;&#x2F;todo 暂时搁置.</p>
+
     </div>
 
     
