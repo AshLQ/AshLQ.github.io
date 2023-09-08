@@ -145,6 +145,73 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2023/09/05/CVE-2021-31956%20ntfs%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="Ash">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Ash blog">
+    </span>
+      <header class="post-header">
+        <h2 class="post-title" itemprop="name headline">
+          
+            <a href="/2023/09/05/CVE-2021-31956%20ntfs%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8/" class="post-title-link" itemprop="url">CVE-2021-31956 ntfs漏洞分析与利用</a>
+        </h2>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+              
+
+              <time title="创建时间：2023-09-05 14:06:38 / 修改时间：16:03:29" itemprop="dateCreated datePublished" datetime="2023-09-05T14:06:38+08:00">2023-09-05</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+          <h1 id="CVE-2021-31956-ntfs漏洞分析与利用"><a href="#CVE-2021-31956-ntfs漏洞分析与利用" class="headerlink" title="CVE-2021-31956 ntfs漏洞分析与利用"></a>CVE-2021-31956 ntfs漏洞分析与利用</h1><p>cve-2021-31956是发生在ntfs.sys模块的一个整形溢出导致的漏洞,可以完成提权,这个漏洞使用的利用方法非常值得学习,也对ntfs.sys的漏洞了解下.</p>
+<h2 id="1-ntfs组件介绍"><a href="#1-ntfs组件介绍" class="headerlink" title="1.ntfs组件介绍"></a>1.ntfs组件介绍</h2>
+          <!--noindex-->
+            <div class="post-button">
+              <a class="btn" href="/2023/09/05/CVE-2021-31956%20ntfs%E6%BC%8F%E6%B4%9E%E5%88%86%E6%9E%90%E4%B8%8E%E5%88%A9%E7%94%A8/#more" rel="contents">
+                阅读全文 &raquo;
+              </a>
+            </div>
+          <!--/noindex-->
+        
+      
+    </div>
+
+    
+    
+    
+      <footer class="post-footer">
+        <div class="post-eof"></div>
+      </footer>
+  </article>
+  
+  
+  
+
+      
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
     <link itemprop="mainEntityOfPage" href="http://example.com/2023/09/01/windows%E6%B1%A0%E9%A3%8E%E6%B0%B4-LFH%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -168,10 +235,16 @@
                 <i class="far fa-calendar"></i>
               </span>
               <span class="post-meta-item-text">发表于</span>
-              
 
-              <time title="创建时间：2023-09-01 16:24:20 / 修改时间：16:31:05" itemprop="dateCreated datePublished" datetime="2023-09-01T16:24:20+08:00">2023-09-01</time>
+              <time title="创建时间：2023-09-01 16:24:20" itemprop="dateCreated datePublished" datetime="2023-09-01T16:24:20+08:00">2023-09-01</time>
             </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-09-04 14:26:19" itemprop="dateModified" datetime="2023-09-04T14:26:19+08:00">2023-09-04</time>
+              </span>
 
           
 
@@ -184,8 +257,8 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="windows池风水-LFH低碎片堆"><a href="#windows池风水-LFH低碎片堆" class="headerlink" title="windows池风水-LFH低碎片堆"></a>windows池风水-LFH低碎片堆</h1><p>在阅读完Scoop_The_Windows_10_pool这篇文章后,对段堆有了一些认识,纸上得来终觉浅,一定要实践下,这篇文章针对LFH低碎片堆池风水的构造进行研究学习.</p>
-<p>漏洞程序选择了HEVD,我编译了win10的版本,以其中的函数MemoryDisclosureNonPagedPoolNxIoctlHandler</p>
+          <h1 id="windows池风水-LFH低碎片堆"><a href="#windows池风水-LFH低碎片堆" class="headerlink" title="windows池风水-LFH低碎片堆"></a>windows池风水-LFH低碎片堆</h1><p>在阅读完Scoop_The_Windows_10_pool这篇文章后,对段堆有了一些认识,纸上得来终觉浅,一定要实践下,这篇文章针对LFH低碎片堆的池风水构造进行研究学习.</p>
+<p>漏洞程序选择了HEVD,我编译为了win10 x64平台的版本,以其中的函数MemoryDisclosureNonPagedPoolNxIoctlHandler</p>
           <!--noindex-->
             <div class="post-button">
               <a class="btn" href="/2023/09/01/windows%E6%B1%A0%E9%A3%8E%E6%B0%B4-LFH%E4%BD%8E%E7%A2%8E%E7%89%87%E5%A0%86/#more" rel="contents">
@@ -315,7 +388,7 @@
                   <i class="far fa-calendar-check"></i>
                 </span>
                 <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-29 17:13:34" itemprop="dateModified" datetime="2023-08-29T17:13:34+08:00">2023-08-29</time>
+                <time title="修改时间：2023-09-01 16:53:33" itemprop="dateModified" datetime="2023-09-01T16:53:33+08:00">2023-09-01</time>
               </span>
 
           
@@ -776,78 +849,6 @@
   
   
 
-      
-  
-  
-  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="image" content="/images/avatar.gif">
-      <meta itemprop="name" content="Ash">
-      <meta itemprop="description" content="">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Ash blog">
-    </span>
-      <header class="post-header">
-        <h2 class="post-title" itemprop="name headline">
-          
-            <a href="/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/" class="post-title-link" itemprop="url">hevd windows内核漏洞练习-ARBITRARY_WRITE</a>
-        </h2>
-
-        <div class="post-meta">
-            <span class="post-meta-item">
-              <span class="post-meta-item-icon">
-                <i class="far fa-calendar"></i>
-              </span>
-              <span class="post-meta-item-text">发表于</span>
-
-              <time title="创建时间：2023-07-16 18:13:35" itemprop="dateCreated datePublished" datetime="2023-07-16T18:13:35+08:00">2023-07-16</time>
-            </span>
-              <span class="post-meta-item">
-                <span class="post-meta-item-icon">
-                  <i class="far fa-calendar-check"></i>
-                </span>
-                <span class="post-meta-item-text">更新于</span>
-                <time title="修改时间：2023-08-23 09:41:06" itemprop="dateModified" datetime="2023-08-23T09:41:06+08:00">2023-08-23</time>
-              </span>
-
-          
-
-        </div>
-      </header>
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-          <h1 id="hevd-windows内核漏洞练习-ARBITRARY-WRITE"><a href="#hevd-windows内核漏洞练习-ARBITRARY-WRITE" class="headerlink" title="hevd windows内核漏洞练习-ARBITRARY_WRITE"></a>hevd windows内核漏洞练习-ARBITRARY_WRITE</h1><h2 id="1-漏洞分析"><a href="#1-漏洞分析" class="headerlink" title="1.漏洞分析"></a>1.漏洞分析</h2><p>这是一个任意内存写入漏洞.它这里并未对UserWriteWhatWhere-&gt;What,UserWriteWhatWhere-&gt;Where的地址进行检查,后面直接写入了,这里正常应该调用ProbeForRead进行检查,判断是否为用户地址空间的地址,并且是否可读写.</p>
-          <!--noindex-->
-            <div class="post-button">
-              <a class="btn" href="/2023/07/16/hevd-windows%E5%86%85%E6%A0%B8%E6%BC%8F%E6%B4%9E%E7%BB%83%E4%B9%A0-ARBITRARY_WRITE/#more" rel="contents">
-                阅读全文 &raquo;
-              </a>
-            </div>
-          <!--/noindex-->
-        
-      
-    </div>
-
-    
-    
-    
-      <footer class="post-footer">
-        <div class="post-eof"></div>
-      </footer>
-  </article>
-  
-  
-  
-
 
   
   <nav class="pagination">
@@ -917,7 +918,7 @@
       <div class="site-state-item site-state-posts">
           <a href="/archives/">
         
-          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-count">23</span>
           <span class="site-state-item-name">日志</span>
         </a>
       </div>
